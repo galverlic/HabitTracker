@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HabitTracker.Views.AddHabitPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodel="clr-namespace:HabitTracker.ViewModels"
+    Title="Add Habit"
+    x:DataType="viewmodel:AddHabitViewModel">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="30">
+
+            <Entry x:Name="HabitNameEntry"
+                   Placeholder="Habit name"
+                   Text="{Binding HabitName}" />
+
+            <Editor x:Name="HabitDescriptionEditor"
+                    Placeholder="Description"
+                    Text="{Binding HabitDescription}"
+                    HeightRequest="100" />
+
+            <Picker x:Name="FrequencyPicker"
+                    Title="Frequency"
+                    TitleColor="Gray"
+                    SelectedItem="{Binding HabitFrequency}">
+                <Picker.ItemsSource>
+                    <!-- Assuming your ViewModel has a collection of frequency options -->
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Once a week</x:String>
+                        <x:String>Twice a week</x:String>
+                        <x:String>Three times a week</x:String>
+                        <x:String>Four times a week</x:String>
+                        <x:String>Five times a week</x:String>
+                        <x:String>Six times a week</x:String>
+                        <x:String>Everyday</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <Button
+                Background="#3ece8e"
+                Command="{Binding AddHabitCommand}"
+                Text="Save"
+                TextColor="DarkGreen" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

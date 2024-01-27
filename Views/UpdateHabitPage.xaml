@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodel="clr-namespace:HabitTracker.ViewModels"
+             x:Class="HabitTracker.Views.UpdateHabitPage"
+             x:DataType="viewmodel:UpdateHabitViewModel"
+             Title="Update Habit">
+
+
+
+    <ContentPage.BindingContext>
+        <Binding Source="{StaticResource ViewModel}" />
+    </ContentPage.BindingContext>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="30">
+            <Entry Placeholder="Habit name"
+                   Text="{Binding Habit.Name}" />
+
+            <Editor Placeholder="Description"
+                    Text="{Binding Habit.Description}"
+                    HeightRequest="100" />
+
+            <Picker Title="Frequency"
+                    TitleColor="Gray"
+                    SelectedItem="{Binding Habit.Frequency}">
+                <Picker.ItemsSource>
+                    <!-- These items should match the options available in your ViewModel -->
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Once a week</x:String>
+                        <x:String>Twice a week</x:String>
+                        <x:String>Three times a week</x:String>
+                        <x:String>Four times a week</x:String>
+                        <x:String>Five times a week</x:String>
+                        <x:String>Six times a week</x:String>
+                        <x:String>Everyday</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <!-- Include other fields such as start_date, reminder_time, status, and streak as needed -->
+
+            <Button Text="Update Habit"
+                    Command="{Binding UpdateHabitCommand}"
+                    BackgroundColor="Green"
+                    TextColor="White" />
+
+            <!-- You may include a Cancel button or similar if necessary -->
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
