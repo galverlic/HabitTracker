@@ -36,7 +36,10 @@
                     </x:Array>
                 </Picker.ItemsSource>
             </Picker>
-
+            <HorizontalStackLayout>
+                <CheckBox IsChecked="{Binding HabitIsCompleted}" />
+                <Label Text="Have you done this habit?" VerticalOptions="Center" />
+            </HorizontalStackLayout>
             <Button
                 Background="#3ece8e"
                 Command="{Binding AddHabitCommand}"

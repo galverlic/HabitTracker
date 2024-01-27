@@ -9,9 +9,7 @@
 
 
 
-    <ContentPage.BindingContext>
-        <Binding Source="{StaticResource ViewModel}" />
-    </ContentPage.BindingContext>
+
 
     <ScrollView>
         <VerticalStackLayout Spacing="20" Padding="30">
@@ -38,7 +36,10 @@
                     </x:Array>
                 </Picker.ItemsSource>
             </Picker>
-
+            <HorizontalStackLayout>
+                <CheckBox IsChecked="{Binding Habit.IsCompleted}" />
+                <Label Text="Have you done this habit?" VerticalOptions="Center" />
+            </HorizontalStackLayout>
             <!-- Include other fields such as start_date, reminder_time, status, and streak as needed -->
 
             <Button Text="Update Habit"

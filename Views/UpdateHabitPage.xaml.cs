@@ -4,9 +4,9 @@ namespace HabitTracker.Views;
 
 public partial class UpdateHabitPage : ContentPage
 {
-    public UpdateHabitPage(UpdateHabitViewModel updateHabitViewModel)
+    public UpdateHabitPage(UpdateHabitViewModel viewModel)
     {
         InitializeComponent();
-        BindingContext = updateHabitViewModel;
+        this.BindingContext = viewModel;
     }
 }

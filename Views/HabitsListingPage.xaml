@@ -1,51 +1,52 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:viewmodels="clr-namespace:HabitTracker.ViewModels"
-             xmlns:models="clr-namespace:HabitTracker.Models"
-             x:Class="HabitTracker.Views.HabitsListingPage"
-             x:DataType="viewmodels:HabitsListingViewModel"
-             Title="Your schedule for">
+<ContentPage
+        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        xmlns:viewmodels="clr-namespace:HabitTracker.ViewModels"
+        xmlns:models="clr-namespace:HabitTracker.Models"
+        x:Class="HabitTracker.Views.HabitsListingPage"
+        x:DataType="viewmodels:HabitsListingViewModel"
+        xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+        xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:resources="clr-namespace:HabitTracker.Resources"
+        Title="Habit Dashboard">
 
-    <!-- You can remove ContentPage.Behaviors if you handle the fetching of habits in the ViewModel constructor or OnAppearing method -->
 
-    <VerticalStackLayout Margin="20">
 
-        <!-- Welcome Message -->
-        <StackLayout Orientation="Horizontal" Spacing="10">
-            <!-- Add your profile image and welcome back text -->
-        </StackLayout>
+    <VerticalStackLayout Spacing="10" Padding="20">
 
-        <!-- Date Selector -->
-        <!-- Add your date selector component -->
+        <Label Text="{Binding CurrentDateDisplay}"
+                 FontSize="Large"
+                 HorizontalOptions="Center"
+                 VerticalOptions="Center" />
 
-        <!-- Habits List -->
         <CollectionView ItemsSource="{Binding Habits}"
-                        SelectionMode="None">
+                SelectionMode="Single"
+                SelectionChangedCommand="{Binding SelectHabitCommand}"
+                SelectionChangedCommandParameter="{Binding SelectedItem, Source={RelativeSource Self}}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Habit">
-                    <Grid Padding="10" RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto"
-                          BackgroundColor="White" Margin="0,0,0,10">
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HabitsListingViewModel}}, Path=OpenHabitDetailCommand}" CommandParameter="{Binding .}" NumberOfTapsRequired="1" />
-                        </Grid.GestureRecognizers>
-                        <StackLayout Grid.Column="0" Orientation="Horizontal" VerticalOptions="Center">
-                            <Label Text="{Binding Name}" VerticalOptions="Center" Margin="10,0,0,0"/>
-                        </StackLayout>
-                        <Label Grid.Column="1" Text="{Binding Frequency}" VerticalOptions="Center" HorizontalOptions="End"/>
-                        <Image Grid.Column="2" Source="right_arrow.png" WidthRequest="30" HeightRequest="30" VerticalOptions="Center" HorizontalOptions="End" Margin="10,0,0,0"/>
-                    </Grid>
+                    <StackLayout Padding="10" Orientation="Horizontal">
+                        <Label Text="{Binding Name}" FontSize="Medium" VerticalOptions="Center" />
+                    </StackLayout>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <!-- Add New Habit Button -->
-        <Button Text="Add new habit"
+
+
+
+        <Button Text="+"
                 Command="{Binding AddHabitCommand}"
-                BackgroundColor="#3ece8e"
+                BackgroundColor="#FF6347"
                 TextColor="White"
-                CornerRadius="20"
+                CornerRadius="25"
+                WidthRequest="50"
                 HeightRequest="50"
-                HorizontalOptions="FillAndExpand"/>
+                HorizontalOptions="Center"
+                VerticalOptions="EndAndExpand"
+                StyleId="AddHabitButton"/>
+
+
     </VerticalStackLayout>
 </ContentPage>

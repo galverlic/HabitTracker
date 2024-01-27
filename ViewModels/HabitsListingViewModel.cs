@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using HabitTracker.Models;
 using HabitTracker.Services;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace HabitTracker.ViewModels
 {
@@ -12,10 +13,40 @@ namespace HabitTracker.ViewModels
 
         public ObservableCollection<Habit> Habits { get; set; } = new();
 
+        [ObservableProperty]
+        private string currentDateDisplay;
+
         public HabitsListingViewModel(IDataService dataService)
         {
             _dataService = dataService;
+            CurrentDateDisplay = DateTime.Now.ToString("D"); // Sets the current date display
+            GetHabits();
+
         }
+        [RelayCommand]
+        public async Task ViewHabit(Habit habit)
+        {
+            if (habit != null)
+            {
+                // Navigate to the UpdateHabitPage with the selected habit
+                var route = $"UpdateHabitPage?HabitId={habit.Id}";
+                await Shell.Current.GoToAsync(route);
+            }
+        }
+        [RelayCommand]
+        private async Task SelectHabit(Habit selectedHabit)
+        {
+            if (selectedHabit != null)
+            {
+                // Use the same key as in the QueryProperty of UpdateHabitViewModel
+                var navigationParameter = new Dictionary<string, object>
+        {
+            { "HabitObject", selectedHabit }
+        };
+                await Shell.Current.GoToAsync($"UpdateHabitPage", navigationParameter);
+            }
+        }
+
 
         [RelayCommand]
         public async Task GetHabits()
@@ -40,8 +71,32 @@ namespace HabitTracker.ViewModels
             }
         }
 
+        //[RelayCommand]
+        //public async Task ToggleHabitCompletion(Habit habit)
+        //{
+        //    try
+        //    {
+        //        if (habit != null)
+        //        {
+        //            Debug.WriteLine($"Name: {habit.Name}");
+        //            Debug.WriteLine($"Description: {habit.Description}");
+        //            Debug.WriteLine($"IsCompleted: {habit.IsCompleted}");
+        //            habit.IsCompleted = !habit.IsCompleted;
+        //            await _dataService.UpdateHabit(habit);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Log the exception to the console or a logging framework
+        //        Debug.WriteLine($"An error occurred: {ex.Message}");
+        //        // You may want to display an alert to the user as well
+        //    }
+        //}
+
+
+
         [RelayCommand]
-        private async Task AddHabit()
+        public async Task AddHabit()
         {
             // Navigate to the add habit page
             await Shell.Current.GoToAsync("AddHabitPage");
@@ -49,7 +104,7 @@ namespace HabitTracker.ViewModels
 
 
         [RelayCommand]
-        private async Task DeleteBook(Habit habit)
+        private async Task DeleteHabit(Habit habit)
         {
             var result = await Shell.Current.DisplayAlert("Delete", $"Are you sure you want to delete \"{habit.Name}\"?", "Yes", "No");
 
@@ -75,6 +130,17 @@ namespace HabitTracker.ViewModels
                 // The navigation depends on your routing setup, but here's a general example:
                 var route = $"HabitDetailPage?HabitId={habit.Id}";
                 await Shell.Current.GoToAsync(route);
+            }
+        }
+        public async Task UpdateHabitCompletionStatus(Habit habit)
+        {
+            if (habit != null)
+            {
+                Debug.WriteLine($"Name: {habit.Name}");
+                Debug.WriteLine($"Description: {habit.Description}");
+                habit.IsCompleted = !habit.IsCompleted;
+                await _dataService.UpdateHabit(habit);
+                // You might want to refresh the list or handle UI updates here
             }
         }
 

@@ -8,6 +8,7 @@ namespace HabitTracker.Models
     {
         [PrimaryKey("id", false)]
         public int Id { get; set; }
+
         [Column("name")]
         public string Name { get; set; }
 
@@ -23,10 +24,16 @@ namespace HabitTracker.Models
         [Column("reminder_time")]
         public TimeSpan? ReminderTime { get; set; } // Assuming reminder_time can be null
 
-        [Column("status")]
-        public string Status { get; set; }   //idk do we need this? boolean maybe?
+        //private bool isCompleted;
+        [Column("is_completed")]
+        public bool IsCompleted { get; set; }
+
 
         [Column("streak")]
         public int Streak { get; set; }
+
+        // Implement the PropertyChanged event handler
+
+
     }
 }
