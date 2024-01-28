@@ -18,8 +18,9 @@ public partial class HabitsListingPage : ContentPage
         if (sender is CheckBox checkBox && checkBox.BindingContext is Habit habit)
         {
             var viewModel = (HabitsListingViewModel)BindingContext;
-            await viewModel.UpdateHabitCompletionStatus(habit);
+            await viewModel.UpdateHabitCompletionStatus(habit, e.Value);
         }
     }
+
 
 }

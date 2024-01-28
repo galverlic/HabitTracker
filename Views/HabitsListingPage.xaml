@@ -27,9 +27,12 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Habit">
                     <StackLayout Padding="10" Orientation="Horizontal">
+                        <CheckBox IsChecked="{Binding IsCompleted}" CheckedChanged="OnCheckBoxCheckedChanged" />
+
                         <Label Text="{Binding Name}" FontSize="Medium" VerticalOptions="Center" />
                     </StackLayout>
                 </DataTemplate>
+
             </CollectionView.ItemTemplate>
         </CollectionView>
 

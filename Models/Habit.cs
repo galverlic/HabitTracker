@@ -18,6 +18,9 @@ namespace HabitTracker.Models
         [Column("frequency")]
         public string Frequency { get; set; }
 
+        [Column("repetition")]
+        public int Repetition { get; set; }
+
         [Column("start_date")]
         public DateTime StartDate { get; set; }
 
@@ -27,7 +30,6 @@ namespace HabitTracker.Models
         //private bool isCompleted;
         [Column("is_completed")]
         public bool IsCompleted { get; set; }
-
 
         [Column("streak")]
         public int Streak { get; set; }

@@ -62,16 +62,26 @@ namespace HabitTracker.ViewModels
             }
         }
 
+        [RelayCommand]
+        public async Task ToggleHabitCompleted(Habit habit)
+        {
+            if (habit != null)
+            {
+                habit.IsCompleted = !habit.IsCompleted;
+                await _dataService.UpdateHabit(habit);
+                // Refresh the list or handle UI updates as necessary
+                await GetHabits();
+
+            }
+        }
 
         [RelayCommand]
         public async Task GetHabits()
         {
             Habits.Clear();
-
             try
             {
                 var habits = await _dataService.GetHabits();
-
                 if (habits.Any())
                 {
                     foreach (var habit in habits)
@@ -82,9 +92,11 @@ namespace HabitTracker.ViewModels
             }
             catch (Exception ex)
             {
-                await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+                Debug.WriteLine($"Error in GetHabits: {ex.Message}");
+                await Shell.Current.DisplayAlert("Error", "Failed to load habits.", "OK");
             }
         }
+
 
 
         [RelayCommand]
@@ -95,24 +107,7 @@ namespace HabitTracker.ViewModels
         }
 
 
-        //[RelayCommand]
-        //private async Task DeleteHabit(Habit habit)
-        //{
-        //    var result = await Shell.Current.DisplayAlert("Delete", $"Are you sure you want to delete \"{habit.Name}\"?", "Yes", "No");
 
-        //    if (result is true)
-        //    {
-        //        try
-        //        {
-        //            await _dataService.DeleteHabit(habit.Id);
-        //            await GetHabits();
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-        //        }
-        //    }
-        //}
         [RelayCommand]
         private async Task OpenHabitDetail(Habit habit)
         {
@@ -124,19 +119,17 @@ namespace HabitTracker.ViewModels
                 await Shell.Current.GoToAsync(route);
             }
         }
-        public async Task UpdateHabitCompletionStatus(Habit habit)
+        public async Task UpdateHabitCompletionStatus(Habit habit, bool isChecked)
         {
             if (habit != null)
             {
-                Debug.WriteLine($"Name: {habit.Name}");
-                Debug.WriteLine($"Description: {habit.Description}");
-                habit.IsCompleted = !habit.IsCompleted;
+                habit.IsCompleted = isChecked;
                 await _dataService.UpdateHabit(habit);
-                // You might want to refresh the list or handle UI updates here
+                // Refresh the list or handle UI updates
                 await GetHabits();
-
             }
         }
+
 
         public void OnDisappearing()
         {
@@ -146,11 +139,5 @@ namespace HabitTracker.ViewModels
 
 
         }
-
-        //    [RelayCommand]
-        //    private async Task UpdateHabit(Habit habit) => await Shell.Current.GoToAsync("UpdateHabitPage", new Dictionary<string, object>
-        //{
-        //    {"HabitObject", habit }
-        //});
     }
 }
