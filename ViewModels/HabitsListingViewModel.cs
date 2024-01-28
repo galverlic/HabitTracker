@@ -11,7 +11,7 @@ namespace HabitTracker.ViewModels
     {
         private readonly IDataService _dataService;
 
-        public ObservableCollection<Habit> Habits { get; set; } = new();
+        public ObservableCollection<Habit> Habits { get; set; } = new ObservableCollection<Habit>();
 
         [ObservableProperty]
         private string currentDateDisplay;
@@ -20,6 +20,21 @@ namespace HabitTracker.ViewModels
         {
             _dataService = dataService;
             CurrentDateDisplay = DateTime.Now.ToString("D"); // Sets the current date display
+
+            MessagingCenter.Subscribe<AddHabitViewModel>(this, "HabitAdded", (sender) =>
+            {
+                GetHabitsCommand.Execute(null);
+            });
+
+            MessagingCenter.Subscribe<UpdateHabitViewModel>(this, "HabitUpdated", (sender) =>
+            {
+                GetHabitsCommand.Execute(null);
+            });
+
+            MessagingCenter.Subscribe<UpdateHabitViewModel>(this, "HabitDeleted", (sender) =>
+            {
+                GetHabitsCommand.Execute(null);
+            });
             GetHabits();
 
         }
@@ -71,29 +86,6 @@ namespace HabitTracker.ViewModels
             }
         }
 
-        //[RelayCommand]
-        //public async Task ToggleHabitCompletion(Habit habit)
-        //{
-        //    try
-        //    {
-        //        if (habit != null)
-        //        {
-        //            Debug.WriteLine($"Name: {habit.Name}");
-        //            Debug.WriteLine($"Description: {habit.Description}");
-        //            Debug.WriteLine($"IsCompleted: {habit.IsCompleted}");
-        //            habit.IsCompleted = !habit.IsCompleted;
-        //            await _dataService.UpdateHabit(habit);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log the exception to the console or a logging framework
-        //        Debug.WriteLine($"An error occurred: {ex.Message}");
-        //        // You may want to display an alert to the user as well
-        //    }
-        //}
-
-
 
         [RelayCommand]
         public async Task AddHabit()
@@ -103,24 +95,24 @@ namespace HabitTracker.ViewModels
         }
 
 
-        [RelayCommand]
-        private async Task DeleteHabit(Habit habit)
-        {
-            var result = await Shell.Current.DisplayAlert("Delete", $"Are you sure you want to delete \"{habit.Name}\"?", "Yes", "No");
+        //[RelayCommand]
+        //private async Task DeleteHabit(Habit habit)
+        //{
+        //    var result = await Shell.Current.DisplayAlert("Delete", $"Are you sure you want to delete \"{habit.Name}\"?", "Yes", "No");
 
-            if (result is true)
-            {
-                try
-                {
-                    await _dataService.DeleteHabit(habit.Id);
-                    await GetHabits();
-                }
-                catch (Exception ex)
-                {
-                    await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-                }
-            }
-        }
+        //    if (result is true)
+        //    {
+        //        try
+        //        {
+        //            await _dataService.DeleteHabit(habit.Id);
+        //            await GetHabits();
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+        //        }
+        //    }
+        //}
         [RelayCommand]
         private async Task OpenHabitDetail(Habit habit)
         {
@@ -141,14 +133,24 @@ namespace HabitTracker.ViewModels
                 habit.IsCompleted = !habit.IsCompleted;
                 await _dataService.UpdateHabit(habit);
                 // You might want to refresh the list or handle UI updates here
+                await GetHabits();
+
             }
         }
 
+        public void OnDisappearing()
+        {
+            MessagingCenter.Unsubscribe<AddHabitViewModel>(this, "HabitAdded");
+            MessagingCenter.Unsubscribe<UpdateHabitViewModel>(this, "HabitUpdated");
+            MessagingCenter.Unsubscribe<UpdateHabitViewModel>(this, "HabitDeleted");
 
-        [RelayCommand]
-        private async Task UpdateHabit(Habit habit) => await Shell.Current.GoToAsync("UpdateHabitPage", new Dictionary<string, object>
-    {
-        {"HabitObject", habit }
-    });
+
+        }
+
+        //    [RelayCommand]
+        //    private async Task UpdateHabit(Habit habit) => await Shell.Current.GoToAsync("UpdateHabitPage", new Dictionary<string, object>
+        //{
+        //    {"HabitObject", habit }
+        //});
     }
 }

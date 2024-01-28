@@ -47,6 +47,11 @@
                     BackgroundColor="Green"
                     TextColor="White" />
 
+            <Button Text="Delete Habit"
+                    Command="{Binding DeleteHabitCommand}"
+                    BackgroundColor="Red"
+                    TextColor="White"/>
+
             <!-- You may include a Cancel button or similar if necessary -->
         </VerticalStackLayout>
     </ScrollView>

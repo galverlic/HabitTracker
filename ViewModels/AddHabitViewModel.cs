@@ -40,6 +40,8 @@ namespace HabitTracker.ViewModels
 
                     };
                     await _dataService.CreateHabit(habit);
+                    // Inside AddHabit method after adding the habit
+                    MessagingCenter.Send(this, "HabitAdded");
 
                     await Shell.Current.GoToAsync("..");
                 }
