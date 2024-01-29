@@ -17,6 +17,8 @@ namespace HabitTracker.ViewModels
         private string _habitFrequency;
         [ObservableProperty]
         private bool _habitIsCompleted;
+        [ObservableProperty]
+        private int _habitTargetRepetition;
 
         public AddHabitViewModel(IDataService dataService)
         {
@@ -36,7 +38,7 @@ namespace HabitTracker.ViewModels
                         Name = HabitName,
                         Description = HabitDescription,
                         Frequency = HabitFrequency,
-                        IsCompleted = HabitIsCompleted
+                        TargetRepetition = HabitTargetRepetition
 
                     };
                     await _dataService.CreateHabit(habit);

@@ -18,8 +18,11 @@ namespace HabitTracker.Models
         [Column("frequency")]
         public string Frequency { get; set; }
 
-        [Column("repetition")]
-        public int Repetition { get; set; }
+        [Column("current_repetition")]
+        public int CurrentRepetition { get; set; }
+
+        [Column("target_repetition")]
+        public int? TargetRepetition { get; set; }
 
         [Column("start_date")]
         public DateTime StartDate { get; set; }

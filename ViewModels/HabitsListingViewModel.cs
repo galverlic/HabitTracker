@@ -49,7 +49,7 @@ namespace HabitTracker.ViewModels
             }
         }
         [RelayCommand]
-        private async Task SelectHabit(Habit selectedHabit)
+        public async Task SelectHabit(Habit selectedHabit)
         {
             if (selectedHabit != null)
             {
@@ -74,6 +74,46 @@ namespace HabitTracker.ViewModels
 
             }
         }
+
+        [RelayCommand]
+        public async Task IncrementRepetition(Habit habit)
+        {
+            if (habit != null)
+            {
+                habit.CurrentRepetition++;
+                if (habit.CurrentRepetition >= habit.TargetRepetition)
+                {
+                    habit.IsCompleted = true;
+                }
+                await _dataService.UpdateHabit(habit);
+                await GetHabits();
+            }
+        }
+        [RelayCommand]
+        public async Task DecrementRepetition(Habit habit)
+        {
+            try
+            {
+                if (habit.CurrentRepetition <= 0)
+                {
+                    habit.CurrentRepetition = 0;
+                }
+                else
+                {
+                    habit.CurrentRepetition--;
+                }
+                await _dataService.UpdateHabit(habit);
+                await GetHabits();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"DecrementRepetition Error: {ex.Message}");
+            }
+        }
+
+
+
+
 
         [RelayCommand]
         public async Task GetHabits()

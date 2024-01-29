@@ -41,12 +41,13 @@ namespace HabitTracker.Services
             if (habit.Frequency != null)
                 updateQuery = updateQuery.Set(h => h.Frequency, habit.Frequency);
 
-            //if (habit.Repetition != default(int))
-            //    updateQuery = updateQuery.Set(h => h.Repetition, habit.Repetition);
+            if (habit.CurrentRepetition >= default(int))
+                updateQuery = updateQuery.Set(h => h.CurrentRepetition, habit.CurrentRepetition);
             // Check if ReminderTime is not the default value
             //if (habit.ReminderTime != default(DateTime))
             //    updateQuery = updateQuery.Set(h => h.ReminderTime, habit.ReminderTime);
-
+            if (habit.TargetRepetition != default(int))
+                updateQuery = updateQuery.Set(h => h.TargetRepetition, habit.TargetRepetition);
             // Check if StartDate is not the default value
             if (habit.StartDate != default(DateTime))
                 updateQuery = updateQuery.Set(h => h.StartDate, habit.StartDate);

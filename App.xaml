@@ -13,6 +13,8 @@
 
             <!-- BoolToImageConverter Resource -->
             <resources:BoolToImageConverter x:Key="BoolToImageConverter" />
+            <resources:BooleanToColorConverter x:Key="BooleanToColorConverter" />
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

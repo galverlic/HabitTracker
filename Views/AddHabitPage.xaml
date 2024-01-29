@@ -36,6 +36,11 @@
                     </x:Array>
                 </Picker.ItemsSource>
             </Picker>
+
+            <Label Text="Target:" FontSize="Medium" />
+            <Entry x:Name="HabitTargetEntry"
+           Placeholder="Habit target"
+           Text="{Binding HabitTargetRepetition}" />
             <HorizontalStackLayout>
                 <CheckBox IsChecked="{Binding HabitIsCompleted}" />
                 <Label Text="Have you done this habit?" VerticalOptions="Center" />
