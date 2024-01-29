@@ -20,50 +20,58 @@
                         <FlexLayout Direction="Row" AlignItems="Center" JustifyContent="SpaceBetween" Wrap="Wrap">
                             <!-- Habit Name -->
                             <Label Text="{Binding Name}"
-                                   FontSize="Medium"
-                                   HorizontalOptions="Start"
-                                   VerticalOptions="Center"
-                                   FlexLayout.Grow="1"/>
+                           FontSize="Medium"
+                           HorizontalOptions="Start"
+                           VerticalOptions="Center"
+                           FlexLayout.Grow="1"/>
 
                             <!-- Decrement Button -->
                             <Button Text="-"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HabitsListingViewModel}}, Path=DecrementRepetitionCommand}"
-                                    CommandParameter="{Binding .}"
-                                    BackgroundColor="Red"
-                                    TextColor="White"
-                                    CornerRadius="20"
-                                    WidthRequest="40"
-                                    HeightRequest="40"
-                                    Margin="0,0,10,0"
-                                    FlexLayout.Basis="Auto"/>
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HabitsListingViewModel}}, Path=DecrementRepetitionCommand}"
+                            CommandParameter="{Binding .}"
+                            BackgroundColor="Red"
+                            TextColor="White"
+                            CornerRadius="20"
+                            WidthRequest="40"
+                            HeightRequest="40"
+                            Margin="0,0,10,0"
+                            FlexLayout.Basis="Auto"/>
 
                             <!-- Current/Target Repetition -->
-                            <Label Text="{Binding CurrentRepetition, StringFormat='{0}/{1}', ConverterParameter={Binding TargetRepetition}}"
-                                   FontSize="Medium"
+                            <Label FontSize="Medium"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"
-                                   FlexLayout.Basis="Auto"/>
+                                   FlexLayout.Basis="Auto">
+                                <Label.Text>
+                                    <MultiBinding StringFormat="{}{0}/{1}">
+                                        <Binding Path="CurrentRepetition" />
+                                        <Binding Path="TargetRepetition" />
+                                    </MultiBinding>
+                                </Label.Text>
+                            </Label>
+
 
                             <!-- Increment Button -->
                             <Button Text="+"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HabitsListingViewModel}}, Path=IncrementRepetitionCommand}"
-                                    CommandParameter="{Binding .}"
-                                    BackgroundColor="Green"
-                                    TextColor="White"
-                                    CornerRadius="20"
-                                    WidthRequest="40"
-                                    HeightRequest="40"
-                                    Margin="10,0,0,0"
-                                    FlexLayout.Basis="Auto"/>
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HabitsListingViewModel}}, Path=IncrementRepetitionCommand}"
+                            CommandParameter="{Binding .}"
+                            BackgroundColor="Green"
+                            TextColor="White"
+                            CornerRadius="20"
+                            WidthRequest="40"
+                            HeightRequest="40"
+                            Margin="10,0,0,0"
+                            FlexLayout.Basis="Auto"/>
                         </FlexLayout>
                         <Frame.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HabitsListingViewModel}}, Path=SelectHabitCommand}"
-                                                  CommandParameter="{Binding .}"/>
+                                          CommandParameter="{Binding .}"/>
                         </Frame.GestureRecognizers>
                     </Frame>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+
 
         <!-- Add Habit Button -->
         <Button Text="+"
