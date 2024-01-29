@@ -4,14 +4,14 @@
              xmlns:viewmodels="clr-namespace:HabitTracker.ViewModels"
              xmlns:models="clr-namespace:HabitTracker.Models"
              x:Class="HabitTracker.Views.HabitsListingPage"
-             x:DataType="viewmodels:HabitsListingViewModel"
-             Title="Habit Dashboard">
+             x:DataType="viewmodels:HabitsListingViewModel">
 
     <VerticalStackLayout Spacing="10" Padding="20">
-        <Label Text="{Binding CurrentDateDisplay}"
-               FontSize="Large"
-               HorizontalOptions="Center"
-               VerticalOptions="Center" />
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center" Spacing="5">
+            <Label Text="Today," FontSize="Large" TextColor="Gray" />
+            <Label Text="{Binding CurrentDateDisplay}" FontSize="Large" TextColor="Black" FontAttributes="Bold" />
+        </StackLayout>
+
 
         <CollectionView ItemsSource="{Binding Habits}" SelectionMode="None">
             <CollectionView.ItemTemplate>

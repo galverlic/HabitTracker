@@ -59,3 +59,11 @@ namespace HabitTracker.ViewModels
         }
     }
 }
+
+/*
+ TODO:
+--> Add habits already pre-did, like "Drink water" with the icon , "Make bed", "Exercise",
+
+
+
+ */

@@ -37,7 +37,6 @@ namespace HabitTracker.Models
         [Column("streak")]
         public int Streak { get; set; }
 
-        // Implement the PropertyChanged event handler
 
 
     }
