@@ -7,10 +7,6 @@
              x:DataType="viewmodel:UpdateHabitViewModel"
              Title="Update Habit">
 
-
-
-
-
     <ScrollView>
         <VerticalStackLayout Spacing="20" Padding="30">
             <Entry Placeholder="Habit name"
@@ -52,7 +48,11 @@
                     BackgroundColor="Red"
                     TextColor="White"/>
 
-            <!-- You may include a Cancel button or similar if necessary -->
+            <Button Text="Reset Streak"
+                    Command="{Binding ResetStreakCommand}"
+                    BackgroundColor="Blue"
+                    TextColor="White"/>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

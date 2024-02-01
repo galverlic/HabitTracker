@@ -56,7 +56,7 @@ namespace HabitTracker.Services
             updateQuery = updateQuery.Set(h => h.IsCompleted, habit.IsCompleted);
 
             // Check if Streak is not the default value (assuming it's a non-nullable int)
-            if (habit.Streak != default(int))
+            if (habit.Streak >= default(int))
                 updateQuery = updateQuery.Set(h => h.Streak, habit.Streak);
 
             // Perform the update

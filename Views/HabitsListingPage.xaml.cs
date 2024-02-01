@@ -11,6 +11,7 @@ public partial class HabitsListingPage : ContentPage
         BindingContext = habitsListingViewModel;
 
 
+
     }
 
     private async void OnCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)

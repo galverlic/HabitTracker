@@ -12,11 +12,13 @@
 
             <Entry x:Name="HabitNameEntry"
                    Placeholder="Habit name"
+                   PlaceholderColor="Gray"
                    Text="{Binding HabitName}" />
 
             <Editor x:Name="HabitDescriptionEditor"
                     Placeholder="Description"
                     Text="{Binding HabitDescription}"
+                    PlaceholderColor="Gray"
                     HeightRequest="100" />
 
             <Picker x:Name="FrequencyPicker"
@@ -39,7 +41,8 @@
 
             <Entry x:Name="HabitRepetitionTargetEntry"
                    Placeholder="Repetition target"
-                   Text="{Binding HabitTargetRepetition}"
+                   Text="{Binding HabitTargetRepetition, StringFormat='{0:##}'}"
+                   PlaceholderColor="Gray"
                    Keyboard="Numeric" />
 
             <Button

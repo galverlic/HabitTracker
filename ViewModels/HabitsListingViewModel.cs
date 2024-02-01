@@ -1,15 +1,19 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HabitTracker.Models;
 using HabitTracker.Services;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Windows.Input;
 
 namespace HabitTracker.ViewModels
 {
     public partial class HabitsListingViewModel : ObservableObject
     {
         private readonly IDataService _dataService;
+        private bool _isPopupVisible;
 
         public ObservableCollection<Habit> Habits { get; set; } = new ObservableCollection<Habit>();
 
@@ -35,6 +39,14 @@ namespace HabitTracker.ViewModels
             {
                 GetHabitsCommand.Execute(null);
             });
+
+            MessagingCenter.Subscribe<UpdateHabitViewModel>(this, "HabitStreakReset", (sender) =>
+            {
+                GetHabitsCommand.Execute(null);
+            });
+
+            ClosePopupCommand = new Command(() => IsPopupVisible = false);
+
             GetHabits();
 
         }
@@ -83,7 +95,17 @@ namespace HabitTracker.ViewModels
                 habit.CurrentRepetition++;
                 if (habit.CurrentRepetition >= habit.TargetRepetition)
                 {
+                    habit.Streak++;
                     habit.IsCompleted = true;
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                    string text = $"Congrats! You finished {habit.Name}. \nStreak: {habit.Streak} days";
+                    ToastDuration duration = ToastDuration.Long;
+                    double fontSize = 14;
+
+                    var toast = Toast.Make(text, duration, fontSize);
+
+                    await toast.Show(cancellationTokenSource.Token);
+
                 }
                 await _dataService.UpdateHabit(habit);
                 await GetHabits();
@@ -111,9 +133,18 @@ namespace HabitTracker.ViewModels
             }
         }
 
+        public bool IsPopupVisible
+        {
+            get => _isPopupVisible;
+            set => SetProperty(ref _isPopupVisible, value);
+        }
 
+        public void ShowPopup()
+        {
+            IsPopupVisible = true;
+        }
 
-
+        public ICommand ClosePopupCommand { get; }
 
         [RelayCommand]
         public async Task GetHabits()
@@ -146,8 +177,6 @@ namespace HabitTracker.ViewModels
             await Shell.Current.GoToAsync("AddHabitPage");
         }
 
-
-
         [RelayCommand]
         private async Task OpenHabitDetail(Habit habit)
         {
@@ -170,12 +199,16 @@ namespace HabitTracker.ViewModels
             }
         }
 
-
+        public void ShowNotifications()
+        {
+            MessagingCenter.Send(this, "ShowNotification");
+        }
         public void OnDisappearing()
         {
             MessagingCenter.Unsubscribe<AddHabitViewModel>(this, "HabitAdded");
             MessagingCenter.Unsubscribe<UpdateHabitViewModel>(this, "HabitUpdated");
             MessagingCenter.Unsubscribe<UpdateHabitViewModel>(this, "HabitDeleted");
+            MessagingCenter.Unsubscribe<UpdateHabitViewModel>(this, "HabitSteakReset");
 
 
         }
