@@ -87,6 +87,8 @@ namespace HabitTracker.ViewModels
             }
         }
 
+        // once a day it should run the program a method to reset the streak but save it before
+
         [RelayCommand]
         public async Task IncrementRepetition(Habit habit)
         {
@@ -98,7 +100,7 @@ namespace HabitTracker.ViewModels
                     habit.Streak++;
                     habit.IsCompleted = true;
                     CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                    string text = $"Congrats! You finished {habit.Name}. \nStreak: {habit.Streak} days";
+                    string text = $"Congrats! You finished {habit.Name}. \nStreak: {habit.Streak} {(habit.Streak == 1 ? "day" : "days")}";
                     ToastDuration duration = ToastDuration.Long;
                     double fontSize = 14;
 
@@ -167,7 +169,6 @@ namespace HabitTracker.ViewModels
                 await Shell.Current.DisplayAlert("Error", "Failed to load habits.", "OK");
             }
         }
-
 
 
         [RelayCommand]

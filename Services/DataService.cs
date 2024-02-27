@@ -1,15 +1,19 @@
 ﻿using HabitTracker.Models;
 using Supabase;
+using System.Timers;
 
 namespace HabitTracker.Services
 {
     public class DataService : IDataService
     {
         private readonly Client _supabaseClient;
+        private System.Timers.Timer _timer;
 
         public DataService(Supabase.Client supabaseClient)
         {
             _supabaseClient = supabaseClient;
+            SetUpTimer();
+
         }
 
         public async Task<IEnumerable<Habit>> GetHabits()
@@ -41,13 +45,16 @@ namespace HabitTracker.Services
             if (habit.Frequency != null)
                 updateQuery = updateQuery.Set(h => h.Frequency, habit.Frequency);
 
-            if (habit.CurrentRepetition >= default(int))
+            if (habit.CurrentRepetition >= 0)
                 updateQuery = updateQuery.Set(h => h.CurrentRepetition, habit.CurrentRepetition);
+
             // Check if ReminderTime is not the default value
             //if (habit.ReminderTime != default(DateTime))
             //    updateQuery = updateQuery.Set(h => h.ReminderTime, habit.ReminderTime);
-            if (habit.TargetRepetition != default(int))
+
+            if (habit.TargetRepetition != 0)
                 updateQuery = updateQuery.Set(h => h.TargetRepetition, habit.TargetRepetition);
+
             // Check if StartDate is not the default value
             if (habit.StartDate != default(DateTime))
                 updateQuery = updateQuery.Set(h => h.StartDate, habit.StartDate);
@@ -56,12 +63,61 @@ namespace HabitTracker.Services
             updateQuery = updateQuery.Set(h => h.IsCompleted, habit.IsCompleted);
 
             // Check if Streak is not the default value (assuming it's a non-nullable int)
-            if (habit.Streak >= default(int))
+            if (habit.Streak >= 0)
                 updateQuery = updateQuery.Set(h => h.Streak, habit.Streak);
 
             // Perform the update
             await updateQuery.Update();
         }
+
+        private void SetUpTimer()
+        {
+            // Calculate time until next midnight
+            var now = DateTime.Now;
+            var nextMidnight = now.Date.AddDays(1);
+            var millisecondsUntilMidnight = (nextMidnight - now).TotalMilliseconds;
+
+            // Set up the timer
+            _timer = new System.Timers.Timer(1000);
+            _timer.Elapsed += OnMidnightReached;
+            _timer.AutoReset = false; // Ensure it doesn't auto-reset; we'll manually reset it
+            _timer.Start();
+        }
+
+        private void OnMidnightReached(object sender, ElapsedEventArgs e)
+        {
+
+            // Reset the streak here
+            ResetDailyStreak();
+
+            // Recalculate the timer for the next day
+            SetUpTimer();
+        }
+
+        private async void ResetDailyStreak()
+        {
+            var habits = GetHabits().Result;
+
+            foreach (var habit in habits)
+            {
+                Console.WriteLine("Streak: " + habit.Streak);
+
+                if (habit.CurrentRepetition >= habit.TargetRepetition)
+                {
+                    habit.Streak++;
+                }
+                else
+                {
+                    habit.Streak = 0;
+                }
+
+                habit.CurrentRepetition = 0;
+
+                await UpdateHabit(habit);
+            }
+
+        }
+
 
 
 
