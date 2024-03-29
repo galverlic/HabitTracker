@@ -4,16 +4,28 @@ using System.Timers;
 
 namespace HabitTracker.Services
 {
-    public class DataService : IDataService
+    public class HabitService : IHabitService
     {
         private readonly Client _supabaseClient;
         private System.Timers.Timer _timer;
 
-        public DataService(Supabase.Client supabaseClient)
+        public HabitService(Supabase.Client supabaseClient)
         {
             _supabaseClient = supabaseClient;
             SetUpTimer();
 
+        }
+
+        public async Task AddHabitToUser(Habit habit, int userId)
+        {
+            habit.UserId = userId;
+            await _supabaseClient.From<Habit>().Insert(habit);
+        }
+
+        public async Task<IEnumerable<Habit>> GetHabitsByUser(int userId)
+        {
+            var response = await _supabaseClient.From<Habit>().Filter("user_id", Postgrest.Constants.Operator.Equals, userId).Get();
+            return response.Models;
         }
 
         public async Task<IEnumerable<Habit>> GetHabits()

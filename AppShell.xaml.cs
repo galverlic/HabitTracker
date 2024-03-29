@@ -10,6 +10,8 @@ namespace HabitTracker
 
             RegisterForRoute<AddHabitPage>();
             RegisterForRoute<UpdateHabitPage>();
+            RegisterForRoute<HabitsListingPage>();
+
         }
 
         protected void RegisterForRoute<T>()

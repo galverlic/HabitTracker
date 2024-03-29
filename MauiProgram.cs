@@ -30,14 +30,18 @@ namespace HabitTracker
             builder.Services.AddSingleton<HabitsListingViewModel>();
             builder.Services.AddTransient<AddHabitViewModel>();
             builder.Services.AddTransient<UpdateHabitViewModel>();
+            builder.Services.AddTransient<AddUserViewModel>();
+
 
             // Add Views
             builder.Services.AddSingleton<HabitsListingPage>();
             builder.Services.AddTransient<AddHabitPage>();
+            builder.Services.AddTransient<RegistrationPage>();
             builder.Services.AddTransient<UpdateHabitPage>();
 
             // Add Data Service
-            builder.Services.AddSingleton<IDataService, DataService>();
+            builder.Services.AddSingleton<IHabitService, HabitService>();
+            builder.Services.AddSingleton<IUserService, UserService>();
 
 #if DEBUG
             builder.Logging.AddDebug();

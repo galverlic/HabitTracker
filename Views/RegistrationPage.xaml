@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HabitTracker.Views.RegistrationPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodel="clr-namespace:HabitTracker.ViewModels"
+    x:DataType="viewmodel:AddUserViewModel">
+
+    <ScrollView>
+        <StackLayout Padding="20" Spacing="15">
+            <Label Text="Create A New Account" HorizontalOptions="Center" FontSize="Large"/>
+
+            <!-- Name Entry -->
+            <Frame Padding="5" CornerRadius="10" BorderColor="LightGray">
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="" FontSize="Medium" WidthRequest="40" VerticalOptions="Center"/>
+                    <Entry x:Name="nameEntry" 
+                           Placeholder="Name" 
+                           Text="{Binding UserName}"/>
+                </StackLayout>
+            </Frame>
+
+            <!-- Email Entry -->
+            <Frame Padding="5" CornerRadius="10" BorderColor="LightGray">
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="📧" FontSize="Medium" WidthRequest="40" VerticalOptions="Center"/>
+                    <Entry x:Name="emailEntry" 
+                           Placeholder="Email" 
+                           Text="{Binding UserEmail}"
+                           Keyboard="Email"/>
+                </StackLayout>
+            </Frame>
+
+            <!-- Password Entry -->
+            <Frame Padding="5" CornerRadius="10" BorderColor="LightGray">
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="🔒" FontSize="Medium" WidthRequest="40" VerticalOptions="Center"/>
+                    <Entry x:Name="passwordEntry" 
+                           Placeholder="Password" 
+                           Text="{Binding UserPassword}"
+                           IsPassword="true"/>
+                </StackLayout>
+            </Frame>
+
+            <!-- Confirm Password Entry -->
+            <Frame Padding="5" CornerRadius="10" BorderColor="LightGray">
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="🔒" FontSize="Medium" WidthRequest="40" VerticalOptions="Center"/>
+                    <Entry x:Name="confirmPasswordEntry" 
+                           Placeholder="Confirm Password" 
+                           Text="{Binding ConfirmPassword}"
+                           IsPassword="true"/>
+                </StackLayout>
+            </Frame>
+
+            <Label Text="{Binding FeedbackMessage}" 
+                   HorizontalOptions="Center"
+                   TextColor="Red" />
+
+            <Button Text="Register" 
+                    Command="{Binding AddUserCommand}" 
+                    BackgroundColor="#4CAF50" 
+                    TextColor="White" 
+                    CornerRadius="20"/>
+            <Button Text="Already have an account? Sign in" 
+                    BackgroundColor="Transparent" 
+                    TextColor="#1565C0"/>
+
+            <Label x:Name="feedbackLabel" TextColor="Red"/>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

@@ -8,6 +8,16 @@
 
     <AbsoluteLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
 
+        <!-- Greeting Label -->
+        <Label Text="{Binding UserName, StringFormat='Hi, {0}'}"
+               AbsoluteLayout.LayoutBounds="1,0,AutoSize,AutoSize"
+               AbsoluteLayout.LayoutFlags="PositionProportional"
+               HorizontalOptions="End"
+               VerticalOptions="Start"
+               Margin="10"
+               FontSize="Medium"
+               TextColor="DarkSlateBlue"/>
+        
         <VerticalStackLayout Spacing="10" Padding="20" AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0,0,1,1">
             <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center" Spacing="5">
                 <Label Text="Today," FontFamily ="Arial"  FontSize="Large" TextColor="Black" />

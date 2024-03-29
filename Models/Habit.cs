@@ -37,6 +37,8 @@ namespace HabitTracker.Models
         [Column("streak")]
         public int Streak { get; set; }
 
+        [Column("user_id")]
+        public int UserId { get; set; } // Foreign key referencing User
 
 
     }

@@ -12,17 +12,24 @@ namespace HabitTracker.ViewModels
 {
     public partial class HabitsListingViewModel : ObservableObject
     {
-        private readonly IDataService _dataService;
+        private readonly IHabitService _habitService;
         private bool _isPopupVisible;
+
+        private string userName = "User";
+        public string UserName
+        {
+            get => userName;
+            set => SetProperty(ref userName, value);
+        }
 
         public ObservableCollection<Habit> Habits { get; set; } = new ObservableCollection<Habit>();
 
         [ObservableProperty]
         private string currentDateDisplay;
 
-        public HabitsListingViewModel(IDataService dataService)
+        public HabitsListingViewModel(IHabitService dataService)
         {
-            _dataService = dataService;
+            _habitService = dataService;
             CurrentDateDisplay = DateTime.Now.ToString("D"); // Sets the current date display
 
             MessagingCenter.Subscribe<AddHabitViewModel>(this, "HabitAdded", (sender) =>
@@ -80,7 +87,7 @@ namespace HabitTracker.ViewModels
             if (habit != null)
             {
                 habit.IsCompleted = !habit.IsCompleted;
-                await _dataService.UpdateHabit(habit);
+                await _habitService.UpdateHabit(habit);
                 // Refresh the list or handle UI updates as necessary
                 await GetHabits();
 
@@ -109,7 +116,7 @@ namespace HabitTracker.ViewModels
                     await toast.Show(cancellationTokenSource.Token);
 
                 }
-                await _dataService.UpdateHabit(habit);
+                await _habitService.UpdateHabit(habit);
                 await GetHabits();
             }
         }
@@ -126,7 +133,7 @@ namespace HabitTracker.ViewModels
                 {
                     habit.CurrentRepetition--;
                 }
-                await _dataService.UpdateHabit(habit);
+                await _habitService.UpdateHabit(habit);
                 await GetHabits();
             }
             catch (Exception ex)
@@ -154,7 +161,7 @@ namespace HabitTracker.ViewModels
             Habits.Clear();
             try
             {
-                var habits = await _dataService.GetHabits();
+                var habits = await _habitService.GetHabits();
                 if (habits.Any())
                 {
                     foreach (var habit in habits)
@@ -194,7 +201,7 @@ namespace HabitTracker.ViewModels
             if (habit != null)
             {
                 habit.IsCompleted = isChecked;
-                await _dataService.UpdateHabit(habit);
+                await _habitService.UpdateHabit(habit);
                 // Refresh the list or handle UI updates
                 await GetHabits();
             }

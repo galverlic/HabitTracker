@@ -7,7 +7,7 @@ namespace HabitTracker.ViewModels
 {
     public partial class AddHabitViewModel : ObservableObject
     {
-        private readonly IDataService _dataService;
+        private readonly IHabitService _habitService;
 
         [ObservableProperty]
         private string _habitName;
@@ -20,9 +20,9 @@ namespace HabitTracker.ViewModels
         [ObservableProperty]
         private int _habitTargetRepetition;
 
-        public AddHabitViewModel(IDataService dataService)
+        public AddHabitViewModel(IHabitService habitService)
         {
-            _dataService = dataService;
+            _habitService = habitService;
 
         }
 
@@ -41,7 +41,7 @@ namespace HabitTracker.ViewModels
                         TargetRepetition = HabitTargetRepetition
 
                     };
-                    await _dataService.CreateHabit(habit);
+                    await _habitService.CreateHabit(habit);
                     // Inside AddHabit method after adding the habit
                     MessagingCenter.Send(this, "HabitAdded");
 
