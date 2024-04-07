@@ -21,16 +21,16 @@ namespace HabitTracker
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
-            // Configure Supabase
-            var url = AppConfig.SUPABASE_URL;
-            var key = AppConfig.SUPABASE_KEY;
-            builder.Services.AddSingleton(provider => new Supabase.Client(url, key));
+            ;
+           
+
 
             // Add ViewModels
             builder.Services.AddSingleton<HabitsListingViewModel>();
             builder.Services.AddTransient<AddHabitViewModel>();
             builder.Services.AddTransient<UpdateHabitViewModel>();
             builder.Services.AddTransient<AddUserViewModel>();
+            builder.Services.AddTransient<LoginViewModel>();
 
 
             // Add Views
@@ -38,10 +38,14 @@ namespace HabitTracker
             builder.Services.AddTransient<AddHabitPage>();
             builder.Services.AddTransient<RegistrationPage>();
             builder.Services.AddTransient<UpdateHabitPage>();
+            builder.Services.AddTransient<LoginPage>();
 
             // Add Data Service
+            builder.Services.AddSingleton<HabitTrackerDatabase>();
             builder.Services.AddSingleton<IHabitService, HabitService>();
             builder.Services.AddSingleton<IUserService, UserService>();
+
+
 
 #if DEBUG
             builder.Logging.AddDebug();

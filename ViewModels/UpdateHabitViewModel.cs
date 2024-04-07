@@ -9,14 +9,14 @@ namespace HabitTracker.ViewModels
     [QueryProperty(nameof(Habit), "HabitObject")]
     public partial class UpdateHabitViewModel : ObservableObject
     {
-        private readonly IHabitService _dataService;
+        private readonly IHabitService _habitService;
 
         [ObservableProperty]
         private Habit _habit;
 
-        public UpdateHabitViewModel(IHabitService dataService)
+        public UpdateHabitViewModel(IHabitService habitService)
         {
-            _dataService = dataService;
+            _habitService = habitService;
         }
 
         [RelayCommand]
@@ -25,7 +25,7 @@ namespace HabitTracker.ViewModels
             if (!string.IsNullOrEmpty(Habit.Name))
             {
 
-                await _dataService.UpdateHabit(Habit);
+                await _habitService.UpdateHabit(Habit);
                 MessagingCenter.Send(this, "HabitUpdated");
 
 
@@ -50,7 +50,7 @@ namespace HabitTracker.ViewModels
 
                 if (isConfirmed)
                 {
-                    await _dataService.DeleteHabit(Habit.Id);
+                    await _habitService.DeleteHabit(Habit.HabitId);
                     MessagingCenter.Send(this, "HabitDeleted");
                     await Shell.Current.GoToAsync("..");
                 }
@@ -78,7 +78,7 @@ namespace HabitTracker.ViewModels
                 if (isConfirmed)
                 {
                     Habit.Streak = 0;
-                    await _dataService.UpdateHabit(Habit);
+                    await _habitService.UpdateHabit(Habit);
                     MessagingCenter.Send(this, "HabitStreakReset");
                     await Shell.Current.GoToAsync(".."); // Navigate back
                 }

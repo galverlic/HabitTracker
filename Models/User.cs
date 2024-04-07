@@ -1,21 +1,23 @@
-﻿using Postgrest.Attributes;
-using Postgrest.Models;
+﻿using SQLite;
+
 
 namespace HabitTracker.Models
 {
-    [Table("Users")]
-    public class User : BaseModel
+    public class User
     {
-        [PrimaryKey("id", false)]
-        public int Id { get; set; }
+        [PrimaryKey]
+        public Guid UserId { get; set; } = Guid.NewGuid();
 
-        [Column("name")]
+        [MaxLength(100)]
         public string Name { get; set; }
 
-        [Column("email")]
+        [MaxLength(100)]
         public string Email { get; set; }
 
-        [Column("password")]
+        [MaxLength(200)]
         public string Password { get; set; }
+
+        // Navigation properties are not automatically managed by SQLite-net
+        // You might manage related data loading manually in your service or repository classes
     }
 }

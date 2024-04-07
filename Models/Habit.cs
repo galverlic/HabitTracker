@@ -1,45 +1,37 @@
-﻿using Postgrest.Attributes;
-using Postgrest.Models;
+﻿using SQLite;
 
 namespace HabitTracker.Models
 {
-    [Table("Habits")]
-    public class Habit : BaseModel
+    public class Habit
     {
-        [PrimaryKey("id", false)]
-        public int Id { get; set; }
+        [PrimaryKey]
+        public Guid HabitId { get; set; } = Guid.NewGuid();
 
-        [Column("name")]
+        [MaxLength(100)]
         public string Name { get; set; }
 
-        [Column("description")]
+        [MaxLength(255)]
         public string Description { get; set; }
 
-        [Column("frequency")]
         public string Frequency { get; set; }
 
-        [Column("current_repetition")]
         public int CurrentRepetition { get; set; }
 
-        [Column("target_repetition")]
         public int? TargetRepetition { get; set; }
 
-        [Column("start_date")]
         public DateTime StartDate { get; set; }
 
-        [Column("reminder_time")]
-        public TimeSpan? ReminderTime { get; set; } // Assuming reminder_time can be null
+        public TimeSpan? ReminderTime { get; set; }
 
-        //private bool isCompleted;
-        [Column("is_completed")]
         public bool IsCompleted { get; set; }
 
-        [Column("streak")]
         public int Streak { get; set; }
 
-        [Column("user_id")]
-        public int UserId { get; set; } // Foreign key referencing User
+        // For SQLite-net, simply keep the foreign key property without EF Core attributes
+        public Guid UserId { get; set; }
 
-
+        // SQLite-net does not automatically handle navigation properties, so they are typically not included
     }
+
+    
 }

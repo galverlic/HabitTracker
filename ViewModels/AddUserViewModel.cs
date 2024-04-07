@@ -34,38 +34,37 @@ namespace HabitTracker.ViewModels
         [RelayCommand]
         private async Task AddUser()
         {
+            if (string.IsNullOrWhiteSpace(UserName) || string.IsNullOrWhiteSpace(UserEmail) || string.IsNullOrWhiteSpace(UserPassword))
+            {
+                FeedbackMessage = "Please fill out all fields!";
+                return;
+            }
+
+            if (UserPassword != ConfirmPassword)
+            {
+                FeedbackMessage = "Passwords do not match.";
+                return;
+            }
+
             try
             {
-                // Corrected logical checks for string.IsNullOrWhiteSpace
-                if (string.IsNullOrWhiteSpace(UserName) || string.IsNullOrWhiteSpace(UserEmail) || string.IsNullOrWhiteSpace(UserPassword))
-                {
-                    FeedbackMessage = "Please fill out all fields!";
-                    return;
-                }
-
-                if (UserPassword != ConfirmPassword)
-                {
-                    FeedbackMessage = "Passwords do not match.";
-                    return;
-                }
-
                 User newUser = new User
                 {
                     Name = UserName,
                     Email = UserEmail,
-                    Password = UserPassword // Ensure this password is hashed before storage
+                    Password = UserPassword
                 };
-                await _userService.CreateUser(newUser); // Assuming CreateUser doesn't directly return a boolean but throws on failure
 
-                // Assuming the navigation or success acknowledgment is handled here
+                await _userService.CreateUser(UserEmail, UserPassword);
                 FeedbackMessage = "User created successfully.";
-                await Shell.Current.GoToAsync("//HabitsListingPage");
+                await Shell.Current.GoToAsync("HabitsListingPage");
             }
             catch (Exception ex)
             {
                 FeedbackMessage = $"Error: {ex.Message}";
             }
         }
+
 
     }
 }

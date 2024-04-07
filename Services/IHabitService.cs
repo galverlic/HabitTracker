@@ -4,11 +4,11 @@ namespace HabitTracker.Services
 {
     public interface IHabitService
     {
-        Task AddHabitToUser(Habit habit, int userId);
-        Task<IEnumerable<Habit>> GetHabitsByUser(int userId);
+        Task AddHabitToUser(Habit habit, Guid userId);
+        Task<IEnumerable<Habit>> GetHabitsByUserId(Guid userId);
         Task<IEnumerable<Habit>> GetHabits();
         Task CreateHabit(Habit habit);
-        Task DeleteHabit(int id);
+        Task DeleteHabit(Guid habitId);
         Task UpdateHabit(Habit habit);
     }
 }

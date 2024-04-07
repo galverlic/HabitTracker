@@ -63,7 +63,7 @@ namespace HabitTracker.ViewModels
             if (habit != null)
             {
                 // Navigate to the UpdateHabitPage with the selected habit
-                var route = $"UpdateHabitPage?HabitId={habit.Id}";
+                var route = $"UpdateHabitPage?HabitId={habit.UserId}";
                 await Shell.Current.GoToAsync(route);
             }
         }
@@ -192,7 +192,7 @@ namespace HabitTracker.ViewModels
             {
                 // Navigate to the detail page for the selected habit
                 // The navigation depends on your routing setup, but here's a general example:
-                var route = $"HabitDetailPage?HabitId={habit.Id}";
+                var route = $"HabitDetailPage?HabitId={habit.UserId}";
                 await Shell.Current.GoToAsync(route);
             }
         }
