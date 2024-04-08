@@ -8,6 +8,7 @@ namespace HabitTracker.ViewModels
     public partial class AddHabitViewModel : ObservableObject
     {
         private readonly IHabitService _habitService;
+        private readonly IUserService _userService;
 
         [ObservableProperty]
         private string _habitName;
@@ -20,10 +21,12 @@ namespace HabitTracker.ViewModels
         [ObservableProperty]
         private int _habitTargetRepetition;
 
-        public AddHabitViewModel(IHabitService habitService)
+        
+
+        public AddHabitViewModel(IHabitService habitService, IUserService userService)
         {
             _habitService = habitService;
-
+            _userService = userService;
         }
 
         [RelayCommand]
@@ -38,7 +41,7 @@ namespace HabitTracker.ViewModels
                         Name = HabitName,
                         Description = HabitDescription,
                         Frequency = HabitFrequency,
-                        TargetRepetition = HabitTargetRepetition
+                        TargetRepetition = HabitTargetRepetition,
 
                     };
                     await _habitService.CreateHabit(habit);

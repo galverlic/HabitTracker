@@ -61,14 +61,18 @@ namespace HabitTracker.Services
         {
             try
             {
-                var user = await _db.Table<User>().FirstOrDefaultAsync(u => u.Email == email);
+                // Query to find the user by email
+                // Assuming QueryAsync is the correct method to asynchronously query the database
+                var users = await _db.QueryAsync<User>("SELECT * FROM User WHERE Email = ?", new object[] { email });
+
+                var user = users.FirstOrDefault(); // This assumes that email is unique in your User table
                 if (user == null)
                 {
                     Console.WriteLine("User not found.");
                     return false;
                 }
 
-                // Verify password
+                // Verify password - Ensure this method checks hashed passwords securely
                 if (VerifyPassword(password, user.Password))
                 {
                     Console.WriteLine("Login successful.");
@@ -86,6 +90,7 @@ namespace HabitTracker.Services
                 return false;
             }
         }
+
 
         // Helper method for hashing passwords
         private string HashPassword(string password)
