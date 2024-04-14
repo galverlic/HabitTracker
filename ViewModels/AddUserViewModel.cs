@@ -48,14 +48,8 @@ namespace HabitTracker.ViewModels
 
             try
             {
-                User newUser = new User
-                {
-                    Name = UserName,
-                    Email = UserEmail,
-                    Password = UserPassword
-                };
-
-                await _userService.CreateUser(UserEmail, UserPassword);
+                // Now passing UserName as the first argument to CreateUser
+                await _userService.CreateUser(UserName, UserEmail, UserPassword);
                 FeedbackMessage = "User created successfully.";
                 await Shell.Current.GoToAsync("HabitsListingPage");
             }
@@ -64,6 +58,7 @@ namespace HabitTracker.ViewModels
                 FeedbackMessage = $"Error: {ex.Message}";
             }
         }
+
 
 
     }

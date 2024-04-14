@@ -9,7 +9,7 @@
     <AbsoluteLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
 
         <!-- Greeting Label -->
-        <Label Text="{Binding UserName, StringFormat='Hi, {0}'}"
+        <Label Text="{Binding UserRealName, StringFormat='Hi, {0}!'}"
                AbsoluteLayout.LayoutBounds="1,0,AutoSize,AutoSize"
                AbsoluteLayout.LayoutFlags="PositionProportional"
                HorizontalOptions="End"

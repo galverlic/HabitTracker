@@ -13,23 +13,29 @@ namespace HabitTracker.ViewModels
     public partial class HabitsListingViewModel : ObservableObject
     {
         private readonly IHabitService _habitService;
+        private readonly IUserService _userService;
+
         private bool _isPopupVisible;
 
-        private string userName = "User";
-        public string UserName
+        private string _userRealName;
+        public string UserRealName
         {
-            get => userName;
-            set => SetProperty(ref userName, value);
+            get => _userRealName;
+            set => SetProperty(ref _userRealName, value);
         }
+
 
         public ObservableCollection<Habit> Habits { get; set; } = new ObservableCollection<Habit>();
 
         [ObservableProperty]
         private string currentDateDisplay;
 
-        public HabitsListingViewModel(IHabitService dataService)
+        public HabitsListingViewModel(IHabitService habitService, IUserService userService)
         {
-            _habitService = dataService;
+            _habitService = habitService;
+            _userService = userService;
+            InitializeUser();
+
             CurrentDateDisplay = DateTime.Now.ToString("D"); // Sets the current date display
 
             MessagingCenter.Subscribe<AddHabitViewModel>(this, "HabitAdded", (sender) =>
@@ -57,6 +63,23 @@ namespace HabitTracker.ViewModels
             GetHabits();
 
         }
+
+        public async Task InitializeUser()
+        {
+            try
+            {
+                var userId = await _userService.GetCurrentUserId();
+                var user = await _userService.GetUserById(userId);
+                UserRealName = user.Name;  // Set the user's real name
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Failed to load user data: " + ex.Message);
+                UserRealName = "Default Name";  // Default name if fail to load
+            }
+        }
+
+
         [RelayCommand]
         public async Task ViewHabit(Habit habit)
         {
@@ -155,13 +178,15 @@ namespace HabitTracker.ViewModels
 
         public ICommand ClosePopupCommand { get; }
 
+
         [RelayCommand]
         public async Task GetHabits()
         {
             Habits.Clear();
             try
             {
-                var habits = await _habitService.GetHabits();
+                var userId = await _userService.GetCurrentUserId();
+                var habits = await _habitService.GetHabitsByUserId(userId);
                 if (habits.Any())
                 {
                     foreach (var habit in habits)

@@ -10,7 +10,9 @@ namespace HabitTracker.Services
     public interface IUserService
     {
         Task<IEnumerable<User>> GetUsers();
-        Task<bool> CreateUser(string email, string password);
+        Task<Guid> GetCurrentUserId();
+        Task<User> GetUserById(Guid userId);
+        Task<bool> CreateUser(string name, string email, string password);
         Task<bool> LogIn(string email, string password);
         //Task DeleteUser(int userId);
         //Task UpdateUser(User user);

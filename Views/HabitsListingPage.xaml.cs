@@ -17,6 +17,8 @@ public partial class HabitsListingPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        await ((HabitsListingViewModel)this.BindingContext).InitializeUser();
+
         // Rest of your code that uses the database (optional)
     }
     private async void OnCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)

@@ -36,23 +36,31 @@ namespace HabitTracker.ViewModels
             {
                 if (!string.IsNullOrEmpty(HabitName))
                 {
-                    Habit habit = new()
+                    var userId = await _userService.GetCurrentUserId();  // Directly gets the userId as Guid
+
+                    if (userId == Guid.Empty)
+                    {
+                        await Shell.Current.DisplayAlert("Error", "User not identified!", "OK");
+                        return;
+                    }
+
+                    Habit habit = new Habit
                     {
                         Name = HabitName,
                         Description = HabitDescription,
                         Frequency = HabitFrequency,
                         TargetRepetition = HabitTargetRepetition,
-
+                        IsCompleted = false,
+                        UserId = userId,  // Directly use the userId
                     };
-                    await _habitService.CreateHabit(habit);
-                    // Inside AddHabit method after adding the habit
-                    MessagingCenter.Send(this, "HabitAdded");
 
+                    await _habitService.CreateHabit(habit);
+                    MessagingCenter.Send(this, "HabitAdded");
                     await Shell.Current.GoToAsync("..");
                 }
                 else
                 {
-                    await Shell.Current.DisplayAlert("Error", "No name!", "OK");
+                    await Shell.Current.DisplayAlert("Error", "No name provided for the habit!", "OK");
                 }
             }
             catch (Exception ex)
@@ -60,6 +68,7 @@ namespace HabitTracker.ViewModels
                 await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
             }
         }
+
     }
 }
 

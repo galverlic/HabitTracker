@@ -92,7 +92,7 @@
 	<ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadDebuggerTimeoutExceptionHabitTrackerHideInfoBar="True" /></VisualStudio></ProjectExtensions>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-	  <Exec Command="call pull_db.bat $(TargetPath)&#xD;&#xA;&#xD;&#xA;" />
+	  <Exec Command="&#xD;&#xA;&#xD;&#xA;" />
 	</Target>
 
 </Project>

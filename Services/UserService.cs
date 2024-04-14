@@ -12,12 +12,12 @@ namespace HabitTracker.Services
     public class UserService : IUserService
     {
         private readonly SQLiteAsyncConnection _db;
+        private static readonly string CurrentUserIdKey = "current_user_id";  // Good use of a constant for the key
 
         public UserService()
         {
-            // Use the DatabasePath from the Constants class
             _db = new SQLiteAsyncConnection(Constants.DatabasePath, Constants.Flags);
-            _db.CreateTableAsync<User>().Wait();
+            _db.CreateTableAsync<User>().Wait();  // Consider handling this asynchronously
         }
 
         public async Task<IEnumerable<User>> GetUsers()
@@ -25,88 +25,78 @@ namespace HabitTracker.Services
             return await _db.Table<User>().ToListAsync();
         }
 
-        public async Task<bool> CreateUser(string email, string password)
+        public async Task<User> GetUserById(Guid userId)
         {
-            try
+            var user = await _db.Table<User>().FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null)
+                throw new InvalidOperationException("User not found.");  // Throwing if user not found is good practice
+            return user;
+        }
+
+        public async Task<Guid> GetCurrentUserId()
+        {
+            var userIdString = await SecureStorage.GetAsync(CurrentUserIdKey);
+            if (string.IsNullOrEmpty(userIdString))
+                throw new InvalidOperationException("No user is currently logged in.");  // Clear error message
+
+            return Guid.Parse(userIdString);
+        }
+
+        public async Task SetCurrentUserId(Guid userId)
+        {
+            await SecureStorage.SetAsync(CurrentUserIdKey, userId.ToString());
+        }
+
+        public async Task<bool> CreateUser(string name, string email, string password)
+        {
+            var existingUser = await _db.Table<User>().FirstOrDefaultAsync(u => u.Email == email);
+            if (existingUser != null)
             {
-                // Check if user already exists
-                var existingUserCount = await _db.Table<User>().Where(u => u.Email == email).CountAsync();
-                if (existingUserCount > 0)
-                {
-                    Console.WriteLine("User already exists.");
-                    return false;
-                }
-
-                // Hash password
-                var hashedPassword = HashPassword(password);
-
-                var newUser = new User
-                {
-                    Email = email,
-                    Password = hashedPassword,
-                    Name = "" // Consider how you want to handle names
-                };
-
-                await _db.InsertAsync(newUser);
-                return true;
+                Console.WriteLine("User already exists.");
+                return false;  // Early exit if user exists
             }
-            catch (Exception ex)
+
+            var hashedPassword = HashPassword(password);
+            var newUser = new User
             {
-                Console.WriteLine($"Exception during user creation: {ex.Message}");
-                return false;
-            }
+                Name = name,
+                Email = email,
+                Password = hashedPassword
+                 // You might want to manage names differently
+            };
+
+            await _db.InsertAsync(newUser);
+            return true;
         }
 
         public async Task<bool> LogIn(string email, string password)
         {
-            try
+            var user = await _db.Table<User>().FirstOrDefaultAsync(u => u.Email == email);
+            if (user != null && VerifyPassword(password, user.Password))
             {
-                // Query to find the user by email
-                // Assuming QueryAsync is the correct method to asynchronously query the database
-                var users = await _db.QueryAsync<User>("SELECT * FROM User WHERE Email = ?", new object[] { email });
-
-                var user = users.FirstOrDefault(); // This assumes that email is unique in your User table
-                if (user == null)
-                {
-                    Console.WriteLine("User not found.");
-                    return false;
-                }
-
-                // Verify password - Ensure this method checks hashed passwords securely
-                if (VerifyPassword(password, user.Password))
-                {
-                    Console.WriteLine("Login successful.");
-                    return true;
-                }
-                else
-                {
-                    Console.WriteLine("Incorrect password.");
-                    return false;
-                }
+                await SetCurrentUserId(user.UserId);  // Correctly sets the current user ID upon login
+                return true;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred during login: {ex.Message}");
-                return false;
-            }
+            return false;
         }
 
-
-        // Helper method for hashing passwords
         private string HashPassword(string password)
         {
             using (var sha256 = SHA256.Create())
             {
                 var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
+                return BitConverter.ToString(hashedBytes).Replace("-", "").ToLowerInvariant();
             }
         }
 
-        // Helper method for verifying passwords
         private bool VerifyPassword(string enteredPassword, string storedHash)
         {
-            var enteredHash = HashPassword(enteredPassword);
-            return enteredHash == storedHash;
+            return HashPassword(enteredPassword) == storedHash;
+        }
+
+        public async Task LogOut()
+        {
+            await SecureStorage.SetAsync(CurrentUserIdKey, string.Empty);  // Correctly clears the stored user ID upon logout
         }
     }
 }
