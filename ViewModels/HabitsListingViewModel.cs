@@ -72,12 +72,18 @@ namespace HabitTracker.ViewModels
                 var user = await _userService.GetUserById(userId);
                 UserRealName = user.Name;  // Set the user's real name
             }
+            catch (InvalidOperationException invEx)
+            {
+                Debug.WriteLine("User not logged in: " + invEx.Message);
+                UserRealName = "No User Logged In";  // More specific message
+            }
             catch (Exception ex)
             {
                 Debug.WriteLine("Failed to load user data: " + ex.Message);
-                UserRealName = "Default Name";  // Default name if fail to load
+                UserRealName = "Error Loading User";  // More specific message
             }
         }
+
 
 
         [RelayCommand]

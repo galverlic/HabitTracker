@@ -1,4 +1,6 @@
-﻿namespace HabitTracker
+﻿using System.Diagnostics;
+
+namespace HabitTracker
 {
     public partial class App : Application
     {

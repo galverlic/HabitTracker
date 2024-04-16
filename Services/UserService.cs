@@ -35,16 +35,17 @@ namespace HabitTracker.Services
 
         public async Task<Guid> GetCurrentUserId()
         {
-            var userIdString = await SecureStorage.GetAsync(CurrentUserIdKey);
-            if (string.IsNullOrEmpty(userIdString))
-                throw new InvalidOperationException("No user is currently logged in.");  // Clear error message
-
-            return Guid.Parse(userIdString);
+            var userIdString = await SecureStorage.GetAsync("current_user_id");
+            if (!string.IsNullOrEmpty(userIdString))
+            {
+                return Guid.Parse(userIdString);
+            }
+            throw new InvalidOperationException("No user is currently logged in.");
         }
 
         public async Task SetCurrentUserId(Guid userId)
         {
-            await SecureStorage.SetAsync(CurrentUserIdKey, userId.ToString());
+            await SecureStorage.SetAsync("current_user_id", userId.ToString());
         }
 
         public async Task<bool> CreateUser(string name, string email, string password)
