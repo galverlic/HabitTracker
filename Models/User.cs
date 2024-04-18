@@ -1,23 +1,25 @@
-﻿using SQLite;
-
+﻿using System;
+using Postgrest.Attributes;
+using Postgrest.Models;
 
 namespace HabitTracker.Models
 {
-    public class User
+    [Table("users")] // Correctly identifies the PostgreSQL table name
+    public class User : BaseModel // Ensure User inherits from BaseModel for Postgrest
     {
-        [PrimaryKey]
-        public Guid UserId { get; set; } = Guid.NewGuid();
+        [PrimaryKey("user_id", false)] // The name here should match the actual primary key column name in your table
+        public Guid UserId { get; set; }
 
-        [MaxLength(100)]
+        [Column("name")] // Maps the Name property to the "name" column in the PostgreSQL table
         public string Name { get; set; }
 
-        [MaxLength(100)]
-        public string Email { get; set; }
+        [Column("email")] // Maps the Email property to the "email" column in the PostgreSQL table
+        public string Email { get; set; }  // Should match with the email used in Supabase auth
 
-        [MaxLength(200)]
-        public string Password { get; set; }
+        [Column("profile_picture_url")] // Maps the ProfilePictureUrl property to the "profile_picture_url" column
+        public string ProfilePictureUrl { get; set; }
 
-        // Navigation properties are not automatically managed by SQLite-net
-        // You might manage related data loading manually in your service or repository classes
+        [Column("date_of_birth")] // Maps the DateOfBirth property to the "date_of_birth" column
+        public DateTime DateOfBirth { get; set; }
     }
 }

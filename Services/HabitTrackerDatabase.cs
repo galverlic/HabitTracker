@@ -1,30 +1,30 @@
-﻿using SQLite;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HabitTracker.Models;
+﻿//using SQLite;
+//using System;
+//using System.Collections.Generic;
+//using System.Linq;
+//using System.Text;
+//using System.Threading.Tasks;
+//using HabitTracker.Models;
 
-namespace HabitTracker.Services
-{
-    public class HabitTrackerDatabase
-    {
-        SQLiteAsyncConnection Database;
+//namespace HabitTracker.Services
+//{
+//    public class HabitTrackerDatabase
+//    {
+//        SQLiteAsyncConnection Database;
 
-        public HabitTrackerDatabase()
-        {
+//        public HabitTrackerDatabase()
+//        {
 
-        }
+//        }
 
-        async Task Init()
-        {
-            if (Database != null)
-                return;
+//        async Task Init()
+//        {
+//            if (Database != null)
+//                return;
 
-            Database = new SQLiteAsyncConnection(Constants.DatabasePath, Constants.Flags);
-            await Database.CreateTableAsync<User>();
-            await Database.CreateTableAsync<Habit>();
-        }
-    }
-}
+//            Database = new SQLiteAsyncConnection(Constants.DatabasePath, Constants.Flags);
+//            await Database.CreateTableAsync<User>();
+//            await Database.CreateTableAsync<Habit>();
+//        }
+//    }
+//}

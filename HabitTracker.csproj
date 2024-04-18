@@ -60,6 +60,7 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.8" />
+		<PackageReference Include="supabase-csharp" Version="0.16.2" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -87,6 +88,10 @@
 		<MauiXaml Update="Views\UpdateHabitPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Helpers\" />
 	</ItemGroup>
 
 	<ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadDebuggerTimeoutExceptionHabitTrackerHideInfoBar="True" /></VisualStudio></ProjectExtensions>
