@@ -6,7 +6,7 @@ namespace HabitTracker.Models
     [Table("habits")]
     public class Habit : BaseModel
     {
-        [PrimaryKey("habit_id", false)]
+        [PrimaryKey("habit_id", shouldInsert: true)]
         public Guid HabitId { get; set; }
 
         [Column("name")]

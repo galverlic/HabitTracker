@@ -12,7 +12,8 @@ namespace HabitTracker
             RegisterForRoute<UpdateHabitPage>();
             RegisterForRoute<HabitsListingPage>();
             RegisterForRoute<RegistrationPage>();
-            
+            RegisterForRoute<UserProfilePage>();
+
 
         }
 

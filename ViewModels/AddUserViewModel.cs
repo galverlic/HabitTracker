@@ -1,12 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HabitTracker.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HabitTracker.Models;
 
 namespace HabitTracker.ViewModels
 {
@@ -29,6 +23,13 @@ namespace HabitTracker.ViewModels
         public AddUserViewModel(IUserService userService)
         {
             _userService = userService;
+        }
+
+
+        [RelayCommand]
+        private async Task GoToSignInPage()
+        {
+            await Shell.Current.GoToAsync("///LoginPage", true);
         }
 
         [RelayCommand]

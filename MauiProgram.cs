@@ -1,11 +1,9 @@
 ﻿using CommunityToolkit.Maui;
 using HabitTracker.Data;
-using HabitTracker.Models;
 using HabitTracker.Services;
 using HabitTracker.ViewModels;
 using HabitTracker.Views;
 using Microsoft.Extensions.Logging;
-using Supabase;
 
 namespace HabitTracker
 
@@ -30,7 +28,7 @@ namespace HabitTracker
             var key = AppConfig.SUPABASE_KEY;
             builder.Services.AddSingleton(provider => new Supabase.Client(url, key));
 
-            
+
 
             // Note the creation as a singleton.
             // Add ViewModels
@@ -47,7 +45,7 @@ namespace HabitTracker
             builder.Services.AddTransient<RegistrationPage>();
             builder.Services.AddTransient<UpdateHabitPage>();
             builder.Services.AddTransient<LoginPage>();
-
+            builder.Services.AddSingleton<UserProfilePage>();
             // Add Data Service
             builder.Services.AddSingleton<IHabitService, HabitService>();
             builder.Services.AddSingleton<IUserService, UserService>();

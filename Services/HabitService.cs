@@ -1,10 +1,4 @@
 ﻿using HabitTracker.Models;
-using Supabase;
-using Postgrest;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Supabase.Interfaces;
 
 namespace HabitTracker.Services
 {
@@ -41,8 +35,7 @@ namespace HabitTracker.Services
 
         public async Task DeleteHabit(Guid habitId)
         {
-             await client.From<Habit>().Where(h => h.HabitId == habitId).Delete();
-                                       
+            await client.From<Habit>().Where(h => h.HabitId == habitId).Delete();
 
         }
 

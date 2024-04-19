@@ -1,6 +1,5 @@
 using HabitTracker.Models;
 using HabitTracker.ViewModels;
-using HabitTracker.Services;
 
 namespace HabitTracker.Views;
 
@@ -10,8 +9,7 @@ public partial class HabitsListingPage : ContentPage
     public HabitsListingPage(HabitsListingViewModel habitsListingViewModel)
     {
         InitializeComponent();
-
-
+        NavigationPage.SetHasBackButton(this, false);
         BindingContext = habitsListingViewModel;
     }
     protected override async void OnAppearing()

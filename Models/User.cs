@@ -1,5 +1,4 @@
-﻿using System;
-using Postgrest.Attributes;
+﻿using Postgrest.Attributes;
 using Postgrest.Models;
 
 namespace HabitTracker.Models
@@ -7,8 +6,8 @@ namespace HabitTracker.Models
     [Table("users")] // Correctly identifies the PostgreSQL table name
     public class User : BaseModel // Ensure User inherits from BaseModel for Postgrest
     {
-        [PrimaryKey("user_id", false)] // The name here should match the actual primary key column name in your table
-        public Guid UserId { get; set; }
+        [PrimaryKey("user_id", shouldInsert: true)] // The name here should match the actual primary key column name in your table
+        public string UserId { get; set; }
 
         [Column("name")] // Maps the Name property to the "name" column in the PostgreSQL table
         public string Name { get; set; }

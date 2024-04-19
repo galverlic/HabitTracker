@@ -1,8 +1,5 @@
 ﻿using HabitTracker.Models;
-using Supabase;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Postgrest.Exceptions;
 
 namespace HabitTracker.Services
 {
@@ -26,7 +23,7 @@ namespace HabitTracker.Services
             var response = await client.From<User>()
                                        .Select("*")
                                        .Filter("user_id", Postgrest.Constants.Operator.Equals, userId.ToString())
-                                       .Single(); 
+                                       .Single();
             return response;
         }
 
@@ -40,36 +37,37 @@ namespace HabitTracker.Services
         public async Task<bool> CreateUser(string name, string email, string password)
         {
             var signUpResponse = await client.Auth.SignUp(email, password);
+            if (signUpResponse.User == null || string.IsNullOrEmpty(signUpResponse.User.Id))
+            {
+                Console.WriteLine("Failed to sign up user.");
+                return false;
+            }
 
-            Console.WriteLine($"SignUp response: {signUpResponse.User?.Id}");
-
-
-            // Check if the user object is not null, which indicates the user was created successfully.
             var newUser = new User
             {
-                UserId = Guid.NewGuid(),
+                UserId = signUpResponse.User.Id,
                 Name = name,
-                Email = signUpResponse.User.Email,
-                // Set other fields as needed
+                Email = signUpResponse.User.Email
             };
-            Console.WriteLine($"[Before Insert] UserID: {newUser.UserId}");
 
             try
             {
-                var insertResponse = await client.From<User>().Insert(newUser).ConfigureAwait(false);
-
-                Console.WriteLine($"[After Insert] UserID: {newUser.UserId}");
-                Console.WriteLine($"Insert successful: {insertResponse}");
-
-                return insertResponse.ResponseMessage == null;
+                var insertResponse = await client.From<User>().Insert(newUser);
+                Console.WriteLine("Insert successful.");
+                return true;
+            }
+            catch (PostgrestException ex)
+            {
+                Console.WriteLine($"PostgrestException during insert: {ex.Message}");
+                if (!string.IsNullOrEmpty(ex.ToString()))
+                {
+                    Console.WriteLine($"Error details: {ex.ToString()}");
+                }
+                return false;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception during insert: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-                }
+                Console.WriteLine($"General exception during insert: {ex.Message}");
                 return false;
             }
         }
@@ -77,7 +75,9 @@ namespace HabitTracker.Services
 
 
 
-            public async Task<bool> LogIn(string email, string password)
+
+
+        public async Task<bool> LogIn(string email, string password)
         {
             var signInResponse = await client.Auth.SignIn(email, password);
             return signInResponse.User != null;  // Check if the User object is not null.
