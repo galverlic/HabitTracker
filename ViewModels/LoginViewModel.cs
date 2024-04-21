@@ -13,6 +13,7 @@ namespace HabitTracker.ViewModels
 
         private readonly IUserService _userService;
 
+
         public LoginViewModel(IUserService userService)
         {
             _userService = userService;
@@ -31,6 +32,27 @@ namespace HabitTracker.ViewModels
             {
                 await Shell.Current.DisplayAlert("Login Failed", "Incorrect email or password.", "OK");
 
+            }
+        }
+
+        [RelayCommand]
+        public async Task LoginWithGoogle()
+        {
+            try
+            {
+                bool isSuccess = await _userService.LogInWithGoogle();
+                if (isSuccess)
+                {
+                    await Shell.Current.GoToAsync("/HabitsListingPage");
+                }
+                else
+                {
+                    await Shell.Current.DisplayAlert("Login Failed", "Google Sign-In failed.", "OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
             }
         }
 

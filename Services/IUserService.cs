@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HabitTracker.Models;
+﻿using HabitTracker.Models;
 
 namespace HabitTracker.Services
 {
@@ -14,6 +9,7 @@ namespace HabitTracker.Services
         Task<User> GetUserById(Guid userId);
         Task<bool> CreateUser(string name, string email, string password);
         Task<bool> LogIn(string email, string password);
+        Task<bool> LogInWithGoogle();
         //Task DeleteUser(int userId);
         //Task UpdateUser(User user);
     }

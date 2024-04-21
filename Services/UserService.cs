@@ -1,5 +1,4 @@
-﻿using HabitTracker.Models;
-using Postgrest.Exceptions;
+﻿using Postgrest.Exceptions;
 
 namespace HabitTracker.Services
 {
@@ -12,15 +11,15 @@ namespace HabitTracker.Services
             this.client = client;
         }
 
-        public async Task<IEnumerable<User>> GetUsers()
+        public async Task<IEnumerable<Models.User>> GetUsers()
         {
-            var response = await client.From<User>().Select("*").Get();
+            var response = await client.From<Models.User>().Select("*").Get();
             return response.Models;
         }
 
-        public async Task<User> GetUserById(Guid userId)
+        public async Task<Models.User> GetUserById(Guid userId)
         {
-            var response = await client.From<User>()
+            var response = await client.From<Models.User>()
                                        .Select("*")
                                        .Filter("user_id", Postgrest.Constants.Operator.Equals, userId.ToString())
                                        .Single();
@@ -43,7 +42,7 @@ namespace HabitTracker.Services
                 return false;
             }
 
-            var newUser = new User
+            var newUser = new Models.User
             {
                 UserId = signUpResponse.User.Id,
                 Name = name,
@@ -52,7 +51,7 @@ namespace HabitTracker.Services
 
             try
             {
-                var insertResponse = await client.From<User>().Insert(newUser);
+                var insertResponse = await client.From<Models.User>().Insert(newUser);
                 Console.WriteLine("Insert successful.");
                 return true;
             }
@@ -72,16 +71,61 @@ namespace HabitTracker.Services
             }
         }
 
-
-
-
-
-
         public async Task<bool> LogIn(string email, string password)
         {
             var signInResponse = await client.Auth.SignIn(email, password);
             return signInResponse.User != null;  // Check if the User object is not null.
         }
+
+        public async Task<bool> LogInWithGoogle()
+        {
+            var authUrl = new Uri("https://your-supabase-project.supabase.co/auth/v1/authorize?provider=google");
+            var callbackUrl = new Uri("habittrackerdatascheme://callback");
+
+            try
+            {
+                var authResult = await WebAuthenticator.AuthenticateAsync(
+                    new WebAuthenticatorOptions
+                    {
+                        Url = authUrl,
+                        CallbackUrl = callbackUrl
+                    });
+
+                // Log all available details from the auth result for debugging
+                Console.WriteLine($"Authentication result - Access Token: {authResult.AccessToken}");
+                Console.WriteLine($"ID Token: {authResult.IdToken}");
+                Console.WriteLine($"Refresh Token: {authResult.RefreshToken}");
+                Console.WriteLine($"Expires In: {authResult.ExpiresIn}");
+                Console.WriteLine("Properties:");
+                foreach (var prop in authResult.Properties)
+                {
+                    Console.WriteLine($"  {prop.Key}: {prop.Value}");
+                }
+
+                if (!string.IsNullOrEmpty(authResult.AccessToken))
+                {
+                    Console.WriteLine("Authentication successful.");
+                    // Optionally, save the access token in secure storage
+                    await SecureStorage.SetAsync("oauth_token", authResult.AccessToken);
+                    return true;  // Authentication successful
+                }
+                else
+                {
+                    Console.WriteLine("Authentication failed: No access token received.");
+                    return false;  // Authentication failed, no token received
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Authentication failed with an exception: {ex.Message}");
+                return false;  // Authentication failed
+            }
+        }
+
+
+
+
+
 
         public async Task LogOut()
         {

@@ -14,8 +14,8 @@
             <Frame Padding="5" CornerRadius="10" BorderColor="LightGray">
                 <StackLayout Orientation="Horizontal">
                     <Label Text="📧" FontSize="Medium" WidthRequest="40" VerticalOptions="Center"/>
-                    <Entry x:Name="emailEntry" 
-                           Placeholder="Email" 
+                    <Entry x:Name="emailEntry"
+                           Placeholder="Email"
                            Text="{Binding UserEmail}"
                            Keyboard="Email"/>
                 </StackLayout>
@@ -25,21 +25,26 @@
             <Frame Padding="5" CornerRadius="10" BorderColor="LightGray">
                 <StackLayout Orientation="Horizontal">
                     <Label Text="🔒" FontSize="Medium" WidthRequest="40" VerticalOptions="Center"/>
-                    <Entry x:Name="passwordEntry" 
-                           Placeholder="Password" 
+                    <Entry x:Name="passwordEntry"
+                           Placeholder="Password"
                            Text="{Binding UserPassword}"
                            IsPassword="true"/>
                 </StackLayout>
             </Frame>
 
-            <Button Text="Log In" 
-                    Command="{Binding AttemptLoginCommand}" 
-                    BackgroundColor="#4CAF50" 
-                    TextColor="White" 
+            <Button Text="Log In"
+                    Command="{Binding AttemptLoginCommand}"
+                    BackgroundColor="#4CAF50"
+                    TextColor="White"
                     CornerRadius="20"/>
-            <Button Text="Don't have an account? Sign up" 
-                    Command="{Binding NavigateToRegisterCommand}" 
-                    BackgroundColor="Transparent" 
+            <Button Text="Log In With Google"
+                    Command="{Binding LoginWithGoogleCommand}"
+                    BackgroundColor="Red"
+                    TextColor="White"
+                    CornerRadius="20"/>
+            <Button Text="Don't have an account? Sign up"
+                    Command="{Binding NavigateToRegisterCommand}"
+                    BackgroundColor="Transparent"
                     TextColor="#1565C0"/>
         </StackLayout>
     </ScrollView>
