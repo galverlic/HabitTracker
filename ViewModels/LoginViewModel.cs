@@ -43,7 +43,7 @@ namespace HabitTracker.ViewModels
                 bool isSuccess = await _userService.LogInWithGoogle();
                 if (isSuccess)
                 {
-                    await Shell.Current.GoToAsync("/HabitsListingPage");
+                    await Shell.Current.GoToAsync("HabitsListingPage");
                 }
                 else
                 {

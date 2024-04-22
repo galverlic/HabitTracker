@@ -5,6 +5,11 @@
       "nativeDebugging": false
     },
     "Profile 1": {
+      "commandName": "Executable",
+      "remoteDebugEnabled": true,
+      "authenticationMode": "None"
+    },
+    "Profile 2": {
       "commandName": "Executable"
     }
   }

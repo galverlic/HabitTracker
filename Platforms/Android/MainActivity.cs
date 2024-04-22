@@ -55,7 +55,8 @@ namespace HabitTracker
     [Activity(NoHistory = true, LaunchMode = LaunchMode.SingleTop, Exported = true)]
     [IntentFilter(new[] { Intent.ActionView },
               Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
-              DataScheme = "habittrackerdatascheme")]
+              DataScheme = "myapp")
+              ]
 
 
     public class WebAuthenticationCallbackActivity : Microsoft.Maui.Authentication.WebAuthenticatorCallbackActivity
