@@ -79,6 +79,14 @@ namespace HabitTracker.Services
             var signInResponse = await client.Auth.SignIn(email, password);
             return signInResponse.User != null;  // Check if the User object is not null.
         }
+        public async Task<Models.User> GetUserByEmail(string email)
+        {
+            var response = await client.From<Models.User>()
+                .Select("*")
+                .Filter("email", Postgrest.Constants.Operator.Equals, email)
+                .Single();
+            return response;
+        }
 
         public async Task<bool> LogInWithGoogle()
         {
@@ -113,14 +121,22 @@ namespace HabitTracker.Services
                 string fullUrl = $"https://efchmeypnivdcbcxxwow.supabase.co/auth/v1/token?{queryString}";
                 var session = await client.Auth.GetSessionFromUrl(new Uri(fullUrl));
 
-                if (session != null && session.User != null)
+                var existingUser = await GetUserByEmail(session.User.Email);
+                if (existingUser != null)
                 {
-                    return await AddOrUpdateUser(session.User);
-
+                    Console.WriteLine("The user already exists.");
                     Console.WriteLine("Google authentication successful.");
                     return true;
                 }
+                else if(session != null && session.User != null && existingUser == null)
+                {
+                    return await AddOrUpdateUser(session.User);
+                    return true;
+                }
                 else
+                {
+                    return false;
+                }
                 {
                     Console.WriteLine("Google authentication failed.");
                     return false;
@@ -136,6 +152,7 @@ namespace HabitTracker.Services
 
         private async Task<bool> AddOrUpdateUser(User user)
         {
+
             var newUser = new Models.User
             {
                 UserId = user.Id,
