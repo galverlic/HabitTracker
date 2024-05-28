@@ -37,6 +37,7 @@ namespace HabitTracker
             builder.Services.AddTransient<UpdateHabitViewModel>();
             builder.Services.AddTransient<AddUserViewModel>();
             builder.Services.AddTransient<LoginViewModel>();
+            builder.Services.AddTransient<UserProfileViewModel>();
 
 
             // Add Views
@@ -45,7 +46,7 @@ namespace HabitTracker
             builder.Services.AddTransient<RegistrationPage>();
             builder.Services.AddTransient<UpdateHabitPage>();
             builder.Services.AddTransient<LoginPage>();
-            builder.Services.AddSingleton<UserProfilePage>();
+            builder.Services.AddTransient<UserProfilePage>();
             // Add Data Service
             builder.Services.AddSingleton<IHabitService, HabitService>();
             builder.Services.AddSingleton<IUserService, UserService>();

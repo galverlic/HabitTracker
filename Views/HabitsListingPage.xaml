@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:viewmodels="clr-namespace:HabitTracker.ViewModels"
-             xmlns:models="clr-namespace:HabitTracker.Models"
-             Shell.NavBarIsVisible="False"
-             x:Class="HabitTracker.Views.HabitsListingPage"
-             x:DataType="viewmodels:HabitsListingViewModel">
-
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodels="clr-namespace:HabitTracker.ViewModels"
+    xmlns:models="clr-namespace:HabitTracker.Models"
+    Shell.NavBarIsVisible="False"
+    x:Class="HabitTracker.Views.HabitsListingPage"
+    x:DataType="viewmodels:HabitsListingViewModel">
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsVisible="False" IsEnabled="False" />
     </Shell.BackButtonBehavior>
-
     <AbsoluteLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-
         <!-- User Profile Icon -->
         <Image Source="user.png"
                AbsoluteLayout.LayoutBounds="1,0,AutoSize,AutoSize"
@@ -24,17 +21,48 @@
                HeightRequest="40"
                WidthRequest="40"
                Aspect="AspectFill">
-
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding OpenUserProfileCommand}" />
+            </Image.GestureRecognizers>
         </Image>
 
         <VerticalStackLayout Spacing="10" Padding="20" AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0,0,1,1">
-            <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center" Spacing="5">
-                <Label Text="Today," FontFamily ="Arial"  FontSize="Large" TextColor="Black" />
-                <Label Text="{Binding CurrentDateDisplay}" FontSize="Large" TextColor="Silver" FontAttributes="Bold" />
+            <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Start" Spacing="5">
+                <Label Text="Today," FontFamily="Arial" FontSize="Large" TextColor="Black" />
+                <Label Text="{Binding CurrentDateDisplay}" FontSize="Medium" TextColor="Silver" FontAttributes="Bold" />
             </StackLayout>
 
+            <!-- Date Display with Navigation Arrows -->
+            <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Start" Spacing="5">
+                <!-- Previous Day Button -->
+                <Button Text="&lt;"
+                        Command="{Binding GoToPreviousDayCommand}"
+                        BackgroundColor="#4CAF50"
+                        TextColor="White"
+                        CornerRadius="20"
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        Margin="0,0,10,0"/>
 
-            <CollectionView ItemsSource="{Binding Habits}" SelectionMode="None">
+                <!-- Current Date Label -->
+                <Label Text="{Binding CurrentDate, StringFormat='{0:MMMM dd, yyyy}'}" 
+                       FontSize="Medium" 
+                       TextColor="Black" 
+                       VerticalOptions="Center" />
+
+                <!-- Next Day Button -->
+                <Button Text="&gt;"
+                        Command="{Binding GoToNextDayCommand}"
+                        BackgroundColor="#4CAF50"
+                        TextColor="White"
+                        CornerRadius="20"
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        Margin="10,0,0,0"/>
+            </StackLayout>
+
+            <!-- CollectionView for Habits -->
+            <CollectionView ItemsSource="{Binding Habits}" SelectionMode="None" VerticalOptions="FillAndExpand">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Habit">
                         <Frame Padding="10" Margin="5" CornerRadius="10" BorderColor="#CCCCCC" BackgroundColor="MediumPurple">
@@ -45,7 +73,6 @@
                            HorizontalOptions="Start"
                            VerticalOptions="Center"
                            FlexLayout.Grow="1"/>
-
                                 <!-- Decrement Button -->
                                 <Button Text="-"
                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HabitsListingViewModel}}, Path=DecrementRepetitionCommand}"
@@ -57,12 +84,11 @@
                             HeightRequest="40"
                             Margin="0,0,10,0"
                             FlexLayout.Basis="Auto"/>
-
                                 <!-- Current/Target Repetition -->
                                 <Label FontSize="Medium"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center"
-                                   FlexLayout.Basis="Auto">
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           FlexLayout.Basis="Auto">
                                     <Label.Text>
                                         <MultiBinding StringFormat="{}{0}/{1}">
                                             <Binding Path="CurrentRepetition" />
@@ -70,34 +96,31 @@
                                         </MultiBinding>
                                     </Label.Text>
                                 </Label>
-
-
                                 <!-- Increment Button -->
                                 <Button Text="+"
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HabitsListingViewModel}}, Path=IncrementRepetitionCommand}"
-                                        CommandParameter="{Binding .}"
-                                        BackgroundColor="Green"
-                                        TextColor="White"
-                                        CornerRadius="20"
-                                        WidthRequest="40"
-                                        HeightRequest="40"
-                                        Margin="10,0,0,0"
-                                        FlexLayout.Basis="Auto"/>
-
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HabitsListingViewModel}}, Path=IncrementRepetitionCommand}"
+                            CommandParameter="{Binding .}"
+                            BackgroundColor="Green"
+                            TextColor="White"
+                            CornerRadius="20"
+                            WidthRequest="40"
+                            HeightRequest="40"
+                            Margin="10,0,0,0"
+                            FlexLayout.Basis="Auto"/>
                             </FlexLayout>
                             <Frame.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HabitsListingViewModel}}, Path=SelectHabitCommand}"
                                           CommandParameter="{Binding .}"/>
                             </Frame.GestureRecognizers>
                         </Frame>
-
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
+
             <!-- Add Habit Button -->
             <Button Text="+"
-                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HabitsListingViewModel}}, Path=AddHabitCommand}"
+                    Command="{Binding AddHabitCommand}"
                     BackgroundColor="#FF6347"
                     TextColor="White"
                     CornerRadius="25"
@@ -107,11 +130,5 @@
                     VerticalOptions="EndAndExpand"
                     StyleId="AddHabitButton"/>
         </VerticalStackLayout>
-
-
-        <!-- Popup Container -->
-
-
     </AbsoluteLayout>
-
 </ContentPage>

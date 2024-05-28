@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using HabitTracker.Models;
 using HabitTracker.Services;
+using System.Threading.Tasks;
 
 namespace HabitTracker.ViewModels
 {
@@ -11,17 +12,31 @@ namespace HabitTracker.ViewModels
         private readonly IUserService _userService;
 
         [ObservableProperty]
-        private string _habitName;
+        private string habitName;
         [ObservableProperty]
-        private string _habitDescription;
-        [ObservableProperty]
-        private string _habitFrequency;
-        [ObservableProperty]
-        private bool _habitIsCompleted;
-        [ObservableProperty]
-        private int _habitTargetRepetition;
+        private string habitDescription;
 
-        
+        [ObservableProperty]
+        private int? habitTargetRepetition;
+
+        [ObservableProperty]
+        private bool habitIsCompleted;
+
+        // Checkbox properties
+        [ObservableProperty]
+        private bool isMondaySelected;
+        [ObservableProperty]
+        private bool isTuesdaySelected;
+        [ObservableProperty]
+        private bool isWednesdaySelected;
+        [ObservableProperty]
+        private bool isThursdaySelected;
+        [ObservableProperty]
+        private bool isFridaySelected;
+        [ObservableProperty]
+        private bool isSaturdaySelected;
+        [ObservableProperty]
+        private bool isSundaySelected;
 
         public AddHabitViewModel(IHabitService habitService, IUserService userService)
         {
@@ -29,53 +44,72 @@ namespace HabitTracker.ViewModels
             _userService = userService;
         }
 
+        private Habit.HabitFrequency CalculateFrequency()
+        {
+            Habit.HabitFrequency frequency = Habit.HabitFrequency.None;
+
+            if (IsMondaySelected) frequency |= Habit.HabitFrequency.Monday;
+            if (IsTuesdaySelected) frequency |= Habit.HabitFrequency.Tuesday;
+            if (IsWednesdaySelected) frequency |= Habit.HabitFrequency.Wednesday;
+            if (IsThursdaySelected) frequency |= Habit.HabitFrequency.Thursday;
+            if (IsFridaySelected) frequency |= Habit.HabitFrequency.Friday;
+            if (IsSaturdaySelected) frequency |= Habit.HabitFrequency.Saturday;
+            if (IsSundaySelected) frequency |= Habit.HabitFrequency.Sunday;
+
+            return frequency;
+        }
+
         [RelayCommand]
         private async Task AddHabit()
         {
-            try
+            var userId = await _userService.GetCurrentUserId();
+            var frequency = GetHabitFrequency();
+            var newHabit = new Habit
             {
-                if (!string.IsNullOrEmpty(HabitName))
-                {
-                    var userId = await _userService.GetCurrentUserId();  // Directly gets the userId as Guid
+                HabitId = Guid.NewGuid(),
+                Name = HabitName,
+                Description = HabitDescription,
+                Frequency = frequency,
+                CurrentRepetition = 0,
+                TargetRepetition = HabitTargetRepetition,
+                StartDate = DateTime.Now,  // Set StartDate to current date
+                ReminderTime = null,
+                IsCompleted = false,
+                Streak = 0,
+                UserId = userId
+            };
 
-                    if (userId == Guid.Empty)
-                    {
-                        await Shell.Current.DisplayAlert("Error", "User not identified!", "OK");
-                        return;
-                    }
-
-                    Habit habit = new Habit
-                    {
-                        Name = HabitName,
-                        Description = HabitDescription,
-                        Frequency = HabitFrequency,
-                        TargetRepetition = HabitTargetRepetition,
-                        IsCompleted = false,
-                        UserId = userId,  // Directly use the userId
-                    };
-
-                    await _habitService.CreateHabit(habit);
-                    MessagingCenter.Send(this, "HabitAdded");
-                    await Shell.Current.GoToAsync("..");
-                }
-                else
-                {
-                    await Shell.Current.DisplayAlert("Error", "No name provided for the habit!", "OK");
-                }
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-            }
+            await _habitService.CreateHabit(newHabit);
+            MessagingCenter.Send(this, "HabitAdded");
+            await Shell.Current.GoToAsync("..");
         }
 
+        private Habit.HabitFrequency GetHabitFrequency()
+        {
+            var frequency = Habit.HabitFrequency.None;
+            if (IsMondaySelected) frequency |= Habit.HabitFrequency.Monday;
+            if (IsTuesdaySelected) frequency |= Habit.HabitFrequency.Tuesday;
+            if (IsWednesdaySelected) frequency |= Habit.HabitFrequency.Wednesday;
+            if (IsThursdaySelected) frequency |= Habit.HabitFrequency.Thursday;
+            if (IsFridaySelected) frequency |= Habit.HabitFrequency.Friday;
+            if (IsSaturdaySelected) frequency |= Habit.HabitFrequency.Saturday;
+            if (IsSundaySelected) frequency |= Habit.HabitFrequency.Sunday;
+            return frequency;
+        }
+    
+    private Habit.HabitFrequency ConvertDayToHabitFrequency(DayOfWeek day)
+        {
+            return day switch
+            {
+                DayOfWeek.Monday => Habit.HabitFrequency.Monday,
+                DayOfWeek.Tuesday => Habit.HabitFrequency.Tuesday,
+                DayOfWeek.Wednesday => Habit.HabitFrequency.Wednesday,
+                DayOfWeek.Thursday => Habit.HabitFrequency.Thursday,
+                DayOfWeek.Friday => Habit.HabitFrequency.Friday,
+                DayOfWeek.Saturday => Habit.HabitFrequency.Saturday,
+                DayOfWeek.Sunday => Habit.HabitFrequency.Sunday,
+                _ => Habit.HabitFrequency.None,
+            };
+        }
     }
 }
-
-/*
- TODO:
---> Add habits already pre-did, like "Drink water" with the icon , "Make bed", "Exercise",
-
-
-
- */

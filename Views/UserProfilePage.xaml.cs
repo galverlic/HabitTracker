@@ -1,9 +1,20 @@
-namespace HabitTracker.Views;
+using HabitTracker.ViewModels;
+using Microsoft.Maui.Controls;
 
-public partial class UserProfilePage : ContentPage
+namespace HabitTracker.Views
 {
-	public UserProfilePage()
-	{
-		InitializeComponent();
-	}
+    public partial class UserProfilePage : ContentPage
+    {
+        public UserProfilePage(UserProfileViewModel viewModel)
+        {
+            InitializeComponent();
+            BindingContext = viewModel;
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            await ((UserProfileViewModel)BindingContext).LoadUserAsync();
+        }
+    }
 }

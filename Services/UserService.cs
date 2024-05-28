@@ -181,13 +181,11 @@ namespace HabitTracker.Services
                 return false;
             }
         }
-
-
-
-
             public async Task LogOut()
         {
             await client.Auth.SignOut();  // SignOut() does not return an object with an error property.
+            await Shell.Current.GoToAsync("//LoginPage");
+
         }
     }
 }

@@ -1,12 +1,85 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodel="clr-namespace:HabitTracker.ViewModels"
              x:Class="HabitTracker.Views.UserProfilePage"
-             Title="UserProfilePage">
-    <VerticalStackLayout>
-        <Label
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center"
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             x:DataType="viewmodel:UserProfileViewModel"
+             Title="User Profile"
+             BackgroundColor="#FAFAFA">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="30" HorizontalOptions="Center" VerticalOptions="Center">
+            <!-- User Profile Section -->
+            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
+                <Frame HasShadow="True" CornerRadius="50" Padding="0" HorizontalOptions="Center">
+                    <Image Source="{Binding User.ProfilePictureUrl}"
+                           WidthRequest="100" HeightRequest="100" Aspect="AspectFill"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           BackgroundColor="#E0E0E0"
+                            />
+                </Frame>
+                <Label Text="{Binding User.Name}" FontSize="Large" HorizontalOptions="Center" />
+                <Label Text="Current Streak: 56" FontSize="Medium" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+           
+
+            <!-- Weekly Stats Section -->
+            <Frame BackgroundColor="White" CornerRadius="10" Padding="20" HasShadow="True" HorizontalOptions="FillAndExpand">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Weekly Stats" FontSize="Medium" FontAttributes="Bold" />
+                    <HorizontalStackLayout Spacing="20" HorizontalOptions="Center">
+                        <VerticalStackLayout HorizontalOptions="Center">
+                            <Label Text="86%" FontSize="Large" TextColor="#6A1B9A" HorizontalOptions="Center" />
+                            <Label Text="Progress" FontSize="Small" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout HorizontalOptions="Center">
+                            <Label Text="92%" FontSize="Large" TextColor="#6A1B9A" HorizontalOptions="Center" />
+                            <Label Text="Consistency" FontSize="Small" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout HorizontalOptions="Center">
+                            <Label Text="3" FontSize="Large" TextColor="#6A1B9A" HorizontalOptions="Center" />
+                            <Label Text="Level" FontSize="Small" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Activities Section -->
+            <Frame BackgroundColor="White" CornerRadius="10" Padding="20" HasShadow="True" HorizontalOptions="FillAndExpand">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="My Activities" FontSize="Medium" FontAttributes="Bold" />
+                    <VerticalStackLayout>
+                        <HorizontalStackLayout>
+                            <Label Text="Meditation:" FontSize="Small" HorizontalOptions="Start" FlexLayout.Grow="1" />
+                            <Label Text=" 4/7" FontSize="Small" HorizontalOptions="End" />
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout>
+                            <Label Text="Piano Practice:" FontSize="Small" HorizontalOptions="Start" FlexLayout.Grow="1" />
+                            <Label Text=" 2/4" FontSize="Small" HorizontalOptions="End" />
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout>
+                            <Label Text="Cycling:" FontSize="Small" HorizontalOptions="Start" FlexLayout.Grow="1" />
+                            <Label Text=" 5/7" FontSize="Small" HorizontalOptions="End" />
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout>
+                            <Label Text="Reading:" FontSize="Small" HorizontalOptions="Start" FlexLayout.Grow="1" />
+                            <Label Text=" 2/5" FontSize="Small" HorizontalOptions="End" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Log Out Button -->
+            <Button Text="Log Out"
+                    Command="{Binding LogOutCommand}"
+                    BackgroundColor="Red"
+                    TextColor="White"
+                    CornerRadius="10"
+                    HeightRequest="50"
+                    HorizontalOptions="FillAndExpand"
+                    Margin="0,10,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

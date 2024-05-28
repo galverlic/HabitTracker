@@ -21,23 +21,37 @@
                     PlaceholderColor="Gray"
                     HeightRequest="100" />
 
-            <Picker x:Name="FrequencyPicker"
-                    Title="Frequency"
-                    TitleColor="Gray"
-                    SelectedItem="{Binding HabitFrequency}">
-                <Picker.ItemsSource>
-                    <!-- Assuming your ViewModel has a collection of frequency options -->
-                    <x:Array Type="{x:Type x:String}">
-                        <x:String>Once a week</x:String>
-                        <x:String>Twice a week</x:String>
-                        <x:String>Three times a week</x:String>
-                        <x:String>Four times a week</x:String>
-                        <x:String>Five times a week</x:String>
-                        <x:String>Six times a week</x:String>
-                        <x:String>Everyday</x:String>
-                    </x:Array>
-                </Picker.ItemsSource>
-            </Picker>
+            <StackLayout>
+                <Label Text="Select Days:" />
+                <StackLayout Orientation="Horizontal" Spacing="10">
+                    <CheckBox IsChecked="{Binding IsMondaySelected}" />
+                    <Label Text="Monday" VerticalOptions="Center" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="10">
+                    <CheckBox IsChecked="{Binding IsTuesdaySelected}" />
+                    <Label Text="Tuesday" VerticalOptions="Center" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="10">
+                    <CheckBox IsChecked="{Binding IsWednesdaySelected}" />
+                    <Label Text="Wednesday" VerticalOptions="Center" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="10">
+                    <CheckBox IsChecked="{Binding IsThursdaySelected}" />
+                    <Label Text="Thursday" VerticalOptions="Center" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="10">
+                    <CheckBox IsChecked="{Binding IsFridaySelected}" />
+                    <Label Text="Friday" VerticalOptions="Center" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="10">
+                    <CheckBox IsChecked="{Binding IsSaturdaySelected}" />
+                    <Label Text="Saturday" VerticalOptions="Center" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="10">
+                    <CheckBox IsChecked="{Binding IsSundaySelected}" />
+                    <Label Text="Sunday" VerticalOptions="Center" />
+                </StackLayout>
+            </StackLayout>
 
             <Entry x:Name="HabitRepetitionTargetEntry"
                    Placeholder="Repetition target"
@@ -54,5 +68,3 @@
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
-
-
