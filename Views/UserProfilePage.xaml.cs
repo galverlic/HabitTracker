@@ -14,7 +14,7 @@ namespace HabitTracker.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            await ((UserProfileViewModel)BindingContext).LoadUserAsync();
+            await ((UserProfileViewModel)BindingContext).LoadUserProfileCommand.ExecuteAsync(null);
         }
     }
 }

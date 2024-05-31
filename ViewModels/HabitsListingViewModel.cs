@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HabitTracker.Models;
 using HabitTracker.Services;
+using Newtonsoft.Json;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -66,6 +67,11 @@ namespace HabitTracker.ViewModels
             GoToPreviousDayCommand = new Command(() => CurrentDate = CurrentDate.AddDays(-1));
             GoToNextDayCommand = new Command(() => CurrentDate = CurrentDate.AddDays(1));
             ClosePopupCommand = new Command(() => IsPopupVisible = false);
+
+            MessagingCenter.Subscribe<UserService>(this, "UserLoggedIn", async (sender) =>
+            {
+                await LoadHabits();
+            });
         }
 
         public async Task InitializeUser()
@@ -75,6 +81,7 @@ namespace HabitTracker.ViewModels
                 var userId = await _userService.GetCurrentUserId();
                 var user = await _userService.GetUserById(userId);
                 UserRealName = user.Name;
+                await LoadHabits();
             }
             catch (InvalidOperationException invEx)
             {
@@ -94,16 +101,27 @@ namespace HabitTracker.ViewModels
             {
                 var userId = await _userService.GetCurrentUserId();
                 var habits = await _habitService.GetHabitsByDateAndUserId(_currentDate, userId);
-                Debug.WriteLine($"Retrieved {habits.Count()} habits for user {userId}");
+
+                Debug.WriteLine($"Retrieved {habits.Count()} habits for user {userId} on date {_currentDate.ToShortDateString()}");
+
                 Habits.Clear();
+
                 foreach (var habit in habits)
                 {
-                    if (habit.Frequency.HasFlag(Habit.ConvertDayToHabitFrequency(_currentDate.DayOfWeek)))
+                    var currentDayFrequency = Habit.ConvertDayToHabitFrequency(_currentDate.DayOfWeek);
+                    Debug.WriteLine($"Habit: {habit.Name}, Frequency: {habit.Frequency}, CurrentDayFrequency: {currentDayFrequency}");
+
+                    if (habit.Frequency.HasFlag(currentDayFrequency))
                     {
-                        Debug.WriteLine($"Habit: {habit.Name}, ID: {habit.HabitId}");
+                        Debug.WriteLine($"Adding habit: {habit.Name} for today");
                         Habits.Add(habit);
                     }
+                    else
+                    {
+                        Debug.WriteLine($"Skipping habit: {habit.Name} for today");
+                    }
                 }
+
                 Debug.WriteLine($"Loaded {Habits.Count} habits into the view model");
             }
             catch (Exception ex)
@@ -111,6 +129,7 @@ namespace HabitTracker.ViewModels
                 Debug.WriteLine($"Error in LoadHabits: {ex.Message}");
             }
         }
+
         [RelayCommand]
         private async Task OpenUserProfile()
         {
@@ -145,22 +164,15 @@ namespace HabitTracker.ViewModels
         [RelayCommand]
         public async Task SelectHabit(Habit selectedHabit)
         {
-            try
+            if (selectedHabit != null)
             {
-                if (selectedHabit != null)
-                {
-                    var navigationParameter = new Dictionary<string, object>
-            {
-                { "HabitObject", selectedHabit }
-            };
-                    await Shell.Current.GoToAsync($"UpdateHabitPage", navigationParameter);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SelectHabit Error: {ex.InnerException?.Message ?? ex.Message}");
+                var habitJson = JsonConvert.SerializeObject(selectedHabit);
+                var route = $"UpdateHabitPage?HabitObject={Uri.EscapeDataString(habitJson)}&SelectedDate={CurrentDate.ToString("o")}";
+                await Shell.Current.GoToAsync(route);
             }
         }
+
+
 
 
         [RelayCommand]

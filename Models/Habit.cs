@@ -50,17 +50,19 @@ namespace HabitTracker.Models
             set => FrequencyValue = (int)value;
         }
 
+
         [Flags]
         public enum HabitFrequency
         {
             None = 0,
-            Monday = 1,
-            Tuesday = 2,
-            Wednesday = 4,
-            Thursday = 8,
-            Friday = 16,
-            Saturday = 32,
-            Sunday = 64
+            Monday = 1 << DayOfWeek.Monday,
+            Tuesday = 1 << DayOfWeek.Tuesday,
+            Wednesday = 1 << DayOfWeek.Wednesday,
+            Thursday = 1 << DayOfWeek.Thursday,
+            Friday = 1 << DayOfWeek.Friday,
+            Saturday = 1 << DayOfWeek.Saturday,
+            Sunday = 1 << DayOfWeek.Sunday,
+            Everyday = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday
         }
 
         [JsonIgnore]

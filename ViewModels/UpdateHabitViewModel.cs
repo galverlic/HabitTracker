@@ -3,17 +3,23 @@ using CommunityToolkit.Mvvm.Input;
 using HabitTracker.Models;
 using HabitTracker.Services;
 using Newtonsoft.Json;
+using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace HabitTracker.ViewModels
 {
-    [QueryProperty(nameof(Habit), "HabitObject")]
+    [QueryProperty(nameof(HabitJson), "HabitObject")]
+    [QueryProperty(nameof(SelectedDate), "SelectedDate")]
     public partial class UpdateHabitViewModel : ObservableObject
     {
         private readonly IHabitService _habitService;
 
         [ObservableProperty]
         private Habit habit;
+
+        [ObservableProperty]
+        private DateTime selectedDate;
 
         private string habitJson;
         public string HabitJson
@@ -22,14 +28,15 @@ namespace HabitTracker.ViewModels
             set
             {
                 habitJson = value;
-                Habit = JsonConvert.DeserializeObject<Habit>(habitJson);
-                OnPropertyChanged(nameof(IsMondayChecked));
-                OnPropertyChanged(nameof(IsTuesdayChecked));
-                OnPropertyChanged(nameof(IsWednesdayChecked));
-                OnPropertyChanged(nameof(IsThursdayChecked));
-                OnPropertyChanged(nameof(IsFridayChecked));
-                OnPropertyChanged(nameof(IsSaturdayChecked));
-                OnPropertyChanged(nameof(IsSundayChecked));
+                try
+                {
+                    Habit = JsonConvert.DeserializeObject<Habit>(Uri.UnescapeDataString(habitJson));
+                    RefreshFrequencyChecks();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error deserializing HabitJson: {ex.Message}");
+                }
             }
         }
 
@@ -80,9 +87,10 @@ namespace HabitTracker.ViewModels
             set => SetDayFlag(Habit.HabitFrequency.Sunday, value);
         }
 
-
         private void SetDayFlag(Habit.HabitFrequency day, bool isChecked)
         {
+            if (Habit == null) return;
+
             if (isChecked)
                 Habit.Frequency |= day;
             else
@@ -90,14 +98,34 @@ namespace HabitTracker.ViewModels
             OnPropertyChanged(nameof(Habit.Frequency));
         }
 
+        private void RefreshFrequencyChecks()
+        {
+            OnPropertyChanged(nameof(IsMondayChecked));
+            OnPropertyChanged(nameof(IsTuesdayChecked));
+            OnPropertyChanged(nameof(IsWednesdayChecked));
+            OnPropertyChanged(nameof(IsThursdayChecked));
+            OnPropertyChanged(nameof(IsFridayChecked));
+            OnPropertyChanged(nameof(IsSaturdayChecked));
+            OnPropertyChanged(nameof(IsSundayChecked));
+        }
+
         [RelayCommand]
         private async Task UpdateHabit()
         {
             if (!string.IsNullOrEmpty(Habit.Name))
             {
-                await _habitService.UpdateHabit(Habit);
-                MessagingCenter.Send(this, "HabitUpdated");
-                await Shell.Current.GoToAsync("..");
+                try
+                {
+                    Habit.Frequency = CalculateFrequency();
+                    await _habitService.UpdateHabit(Habit);
+                    MessagingCenter.Send(this, "HabitUpdated");
+                    await Shell.Current.GoToAsync("..");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error updating habit: {ex.Message}");
+                    await Shell.Current.DisplayAlert("Error", "Failed to update habit.", "OK");
+                }
             }
             else
             {
@@ -105,25 +133,73 @@ namespace HabitTracker.ViewModels
             }
         }
 
+        private Habit.HabitFrequency CalculateFrequency()
+        {
+            Habit.HabitFrequency frequency = Habit.HabitFrequency.None;
+
+            if (IsMondayChecked) frequency |= Habit.HabitFrequency.Monday;
+            if (IsTuesdayChecked) frequency |= Habit.HabitFrequency.Tuesday;
+            if (IsWednesdayChecked) frequency |= Habit.HabitFrequency.Wednesday;
+            if (IsThursdayChecked) frequency |= Habit.HabitFrequency.Thursday;
+            if (IsFridayChecked) frequency |= Habit.HabitFrequency.Friday;
+            if (IsSaturdayChecked) frequency |= Habit.HabitFrequency.Saturday;
+            if (IsSundayChecked) frequency |= Habit.HabitFrequency.Sunday;
+
+            return frequency;
+        }
+
         [RelayCommand]
         private async Task DeleteHabit()
         {
-            if (!string.IsNullOrEmpty(Habit.Name))
-            {
-                bool isConfirmed = await Shell.Current.DisplayAlert("Confirm Delete",
-                                                                    $"Are you sure you want to delete \"{Habit.Name}\"?",
-                                                                    "Yes", "No");
+            Debug.WriteLine("DeleteHabit command executed");
 
-                if (isConfirmed)
-                {
-                    await _habitService.DeleteHabit(Habit.HabitId);
-                    MessagingCenter.Send(this, "HabitDeleted");
-                    await Shell.Current.GoToAsync("..");
-                }
+            var action = await Shell.Current.DisplayActionSheet(
+                $"Delete {Habit.Name}",
+                "Cancel",
+                null,
+                "Delete This Day's Habit",
+                "Delete All Future Instances");
+
+            Debug.WriteLine($"User selected action: {action}");
+
+            if (action == "Delete This Day's Habit")
+            {
+                await DeleteSingleHabitInstance(SelectedDate);
+            }
+            else if (action == "Delete All Future Instances")
+            {
+                await DeleteAllHabitInstances();
+            }
+        }
+
+        private async Task DeleteSingleHabitInstance(DateTime date)
+        {
+            Debug.WriteLine($"Attempting to delete single instance of habit: {Habit.HabitId} on {date}");
+
+            var progress = await _habitService.GetHabitProgress(Habit.HabitId, date);
+            if (progress != null)
+            {
+                Debug.WriteLine($"Found habit progress to delete: {progress.ProgressId}");
+                await _habitService.DeleteHabitProgress(progress.ProgressId);
             }
             else
             {
-                await Shell.Current.DisplayAlert("Error", "Habit name is not specified.", "OK");
+                Debug.WriteLine("No habit progress found for the specified date.");
+            }
+        }
+
+        private async Task DeleteAllHabitInstances()
+        {
+            try
+            {
+                await _habitService.DeleteHabit(Habit.HabitId);
+                MessagingCenter.Send(this, "HabitDeleted");
+                await Shell.Current.GoToAsync("..");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error deleting all habit instances: {ex.Message}");
+                await Shell.Current.DisplayAlert("Error", "Failed to delete habit.", "OK");
             }
         }
 

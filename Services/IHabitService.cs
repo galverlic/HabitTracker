@@ -19,5 +19,7 @@ namespace HabitTracker.Services
         Task AddProgressAsync(HabitProgress progress); // Add this line
         Task ResetDailyHabits(Guid userId);
         Task<IEnumerable<Habit>> GetHabitsByDateAndUserId(DateTime date, Guid userId);
+        Task DeleteHabitProgress(Guid habitProgressId); 
+        Task<int> CalculateStreak(Guid habitId);
     }
 }

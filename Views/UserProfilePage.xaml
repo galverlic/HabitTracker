@@ -12,18 +12,32 @@
             <!-- User Profile Section -->
             <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
                 <Frame HasShadow="True" CornerRadius="50" Padding="0" HorizontalOptions="Center">
-                    <Image Source="{Binding User.ProfilePictureUrl}"
+                    <Image Source="{Binding ProfilePictureUrl}"
                            WidthRequest="100" HeightRequest="100" Aspect="AspectFill"
                            HorizontalOptions="Center"
                            VerticalOptions="Center"
-                           BackgroundColor="#E0E0E0"
-                            />
+                           BackgroundColor="#E0E0E0" />
                 </Frame>
-                <Label Text="{Binding User.Name}" FontSize="Large" HorizontalOptions="Center" />
-                <Label Text="Current Streak: 56" FontSize="Medium" HorizontalOptions="Center" />
+                <Label Text="{Binding UserName}" FontSize="Large" HorizontalOptions="Center" />
+                <Label Text="{Binding CurrentStreak, StringFormat='Current Streak: {0} days'}" FontSize="Medium" HorizontalOptions="Center" />
             </VerticalStackLayout>
 
-           
+            <!-- Active Habits Section -->
+            <Frame BackgroundColor="White" CornerRadius="10" Padding="20" HasShadow="True" HorizontalOptions="FillAndExpand">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Active Habits" FontSize="Medium" FontAttributes="Bold" />
+                    <CollectionView ItemsSource="{Binding ActiveHabits}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="10" ColumnDefinitions="*, Auto">
+                                    <Label Text="{Binding UserName}" FontSize="Medium" Grid.Column="0" />
+                                    <Label Text="{Binding CurrentStreak, StringFormat='Streak: {0} days'}" FontSize="Small" Grid.Column="1" TextColor="Green"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
 
             <!-- Weekly Stats Section -->
             <Frame BackgroundColor="White" CornerRadius="10" Padding="20" HasShadow="True" HorizontalOptions="FillAndExpand">
@@ -46,30 +60,6 @@
                 </VerticalStackLayout>
             </Frame>
 
-            <!-- Activities Section -->
-            <Frame BackgroundColor="White" CornerRadius="10" Padding="20" HasShadow="True" HorizontalOptions="FillAndExpand">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="My Activities" FontSize="Medium" FontAttributes="Bold" />
-                    <VerticalStackLayout>
-                        <HorizontalStackLayout>
-                            <Label Text="Meditation:" FontSize="Small" HorizontalOptions="Start" FlexLayout.Grow="1" />
-                            <Label Text=" 4/7" FontSize="Small" HorizontalOptions="End" />
-                        </HorizontalStackLayout>
-                        <HorizontalStackLayout>
-                            <Label Text="Piano Practice:" FontSize="Small" HorizontalOptions="Start" FlexLayout.Grow="1" />
-                            <Label Text=" 2/4" FontSize="Small" HorizontalOptions="End" />
-                        </HorizontalStackLayout>
-                        <HorizontalStackLayout>
-                            <Label Text="Cycling:" FontSize="Small" HorizontalOptions="Start" FlexLayout.Grow="1" />
-                            <Label Text=" 5/7" FontSize="Small" HorizontalOptions="End" />
-                        </HorizontalStackLayout>
-                        <HorizontalStackLayout>
-                            <Label Text="Reading:" FontSize="Small" HorizontalOptions="Start" FlexLayout.Grow="1" />
-                            <Label Text=" 2/5" FontSize="Small" HorizontalOptions="End" />
-                        </HorizontalStackLayout>
-                    </VerticalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
 
             <!-- Log Out Button -->
             <Button Text="Log Out"

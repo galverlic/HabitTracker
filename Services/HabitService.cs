@@ -49,27 +49,35 @@ namespace HabitTracker.Services
 
         public async Task DeleteHabit(Guid habitId)
         {
-            await client.From<Habit>().Where(h => h.HabitId == habitId).Delete();
+            try
+            {
+                await client.From<Habit>().Where(h => h.HabitId == habitId).Delete();
+                Debug.WriteLine($"Habit with ID {habitId} deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error deleting habit with ID {habitId}: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task UpdateHabit(Habit habit)
         {
             var updateQuery = client.From<Habit>().Where(h => h.HabitId == habit.HabitId);
 
-            if (habit.Name != null)
+            if (!string.IsNullOrWhiteSpace(habit.Name))
                 updateQuery = updateQuery.Set(h => h.Name, habit.Name);
 
-            if (habit.Description != null)
+            if (!string.IsNullOrWhiteSpace(habit.Description))
                 updateQuery = updateQuery.Set(h => h.Description, habit.Description);
 
-            if (habit.FrequencyValue >= 0)
-                updateQuery = updateQuery.Set(h => h.FrequencyValue, habit.FrequencyValue);
+            updateQuery = updateQuery.Set(h => h.FrequencyValue, habit.FrequencyValue);
 
             if (habit.CurrentRepetition >= 0)
                 updateQuery = updateQuery.Set(h => h.CurrentRepetition, habit.CurrentRepetition);
 
-            if (habit.TargetRepetition != 0)
-                updateQuery = updateQuery.Set(h => h.TargetRepetition, habit.TargetRepetition);
+            if (habit.TargetRepetition.HasValue && habit.TargetRepetition.Value > 0)
+                updateQuery = updateQuery.Set(h => h.TargetRepetition, habit.TargetRepetition.Value);
 
             if (habit.StartDate != default(DateTime))
                 updateQuery = updateQuery.Set(h => h.StartDate, habit.StartDate);
@@ -79,7 +87,7 @@ namespace HabitTracker.Services
             if (habit.Streak >= 0)
                 updateQuery = updateQuery.Set(h => h.Streak, habit.Streak);
 
-            await updateQuery.Update();
+            var response = await updateQuery.Update();
         }
 
         public async Task<List<HabitProgress>> GetProgressForHabitAsync(Guid habitId, DateTime date)
@@ -95,6 +103,32 @@ namespace HabitTracker.Services
         public async Task AddProgressAsync(HabitProgress progress)
         {
             await client.From<HabitProgress>().Insert(progress);
+        }
+        public async Task<int> CalculateStreak(Guid habitId)
+        {
+            var progressRecords = await client.From<HabitProgress>()
+                                              .Select("*")
+                                              .Filter("habit_id", Postgrest.Constants.Operator.Equals, habitId.ToString())
+                                              .Order("date", Postgrest.Constants.Ordering.Descending)
+                                              .Get();
+
+            int streak = 0;
+            DateTime previousDate = DateTime.Today;
+
+            foreach (var progress in progressRecords.Models)
+            {
+                if (progress.Date == previousDate || progress.Date == previousDate.AddDays(-1))
+                {
+                    streak++;
+                    previousDate = progress.Date;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return streak;
         }
 
         public async Task ResetDailyHabits(Guid userId)
@@ -156,8 +190,11 @@ namespace HabitTracker.Services
                                             .Get();
             var habits = habitResponse.Models;
 
+            Debug.WriteLine($"Retrieved {habits.Count} habits for user {userId} on or before {formattedDate}");
+
             // Filter habits by frequency
             var filteredHabits = habits.Where(habit => habit.FrequencyDays.Contains(date.DayOfWeek)).ToList();
+            Debug.WriteLine($"Filtered {filteredHabits.Count} habits for the current day of week: {date.DayOfWeek}");
 
             // Fetch progress records for these habits on the specified date
             var progressResponse = await client.From<HabitProgress>()
@@ -165,6 +202,7 @@ namespace HabitTracker.Services
                                                .Filter("date", Postgrest.Constants.Operator.Equals, formattedDate)
                                                .Get();
             var progressRecords = progressResponse.Models;
+            Debug.WriteLine($"Retrieved {progressRecords.Count} progress records for date {formattedDate}");
 
             // Match habits with their corresponding progress
             var joinedData = filteredHabits
@@ -181,16 +219,24 @@ namespace HabitTracker.Services
                             })
                 .ToList();
 
+            Debug.WriteLine($"Joined {joinedData.Count} habits with progress records");
+
             return joinedData;
         }
 
+
         public async Task<HabitProgress> GetHabitProgress(Guid habitId, DateTime date)
         {
+            var formattedDate = date.Date.ToString("yyyy-MM-dd");
+            Debug.WriteLine($"Querying habit progress for habitId: {habitId} on date: {formattedDate}");
+
             var response = await client.From<HabitProgress>()
                                        .Select("*")
                                        .Filter("habit_id", Operator.Equals, habitId.ToString())
-                                       .Filter("date", Operator.Equals, date.Date.ToString("yyyy-MM-dd"))
+                                       .Filter("date", Operator.Equals, formattedDate)
                                        .Single();
+            Debug.WriteLine($"Retrieved habit progress: {(response?.ProgressId.ToString() ?? "None")}");
+
 
             return response;
         }
@@ -215,7 +261,19 @@ namespace HabitTracker.Services
                 await client.From<HabitProgress>().Update(existingProgress);
             }
         }
-
+        public async Task DeleteHabitProgress(Guid progressId)
+        {
+            try
+            {
+                await client.From<HabitProgress>().Where(p => p.ProgressId == progressId).Delete();
+                Debug.WriteLine($"Habit progress with ID {progressId} deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error deleting habit progress with ID {progressId}: {ex.Message}");
+                throw;
+            }
+        }
 
     }
 }

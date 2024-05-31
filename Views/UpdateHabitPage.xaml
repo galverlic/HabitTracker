@@ -15,6 +15,9 @@
                     Text="{Binding Habit.Description}"
                     HeightRequest="100" />
 
+            <DatePicker Date="{Binding SelectedDate}" />
+            <!-- Add DatePicker for selecting date -->
+
             <StackLayout>
                 <Label Text="Select Days:" />
                 <HorizontalStackLayout Spacing="10">
@@ -46,11 +49,6 @@
                     <Label Text="Sunday" VerticalOptions="Center" />
                 </HorizontalStackLayout>
             </StackLayout>
-
-            <HorizontalStackLayout>
-                <CheckBox IsChecked="{Binding Habit.IsCompleted}" />
-                <Label Text="Have you done this habit?" VerticalOptions="Center" />
-            </HorizontalStackLayout>
 
             <Button Text="Update Habit"
                     Command="{Binding UpdateHabitCommand}"

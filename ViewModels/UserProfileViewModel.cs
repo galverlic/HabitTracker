@@ -3,45 +3,73 @@ using CommunityToolkit.Mvvm.Input;
 using HabitTracker.Models;
 using HabitTracker.Services;
 using System;
-using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace HabitTracker.ViewModels
 {
     public partial class UserProfileViewModel : ObservableObject
     {
+        private readonly IHabitService _habitService;
         private readonly IUserService _userService;
 
-        [ObservableProperty]
-        private User user;
+        public ObservableCollection<Habit> ActiveHabits { get; set; } = new ObservableCollection<Habit>();
 
-        public UserProfileViewModel(IUserService userService)
+        public UserProfileViewModel(IHabitService habitService, IUserService userService)
         {
+            _habitService = habitService;
             _userService = userService;
+            LoadUserProfileCommand = new AsyncRelayCommand(LoadUserProfile);
+            LogOutCommand = new AsyncRelayCommand(LogOut);
         }
 
-        [RelayCommand]
-        public async Task LoadUserAsync()
+        [ObservableProperty]
+        private string userName;
+
+        [ObservableProperty]
+        private string profilePictureUrl;
+
+        [ObservableProperty]
+        private int currentStreak;
+
+        public IAsyncRelayCommand LoadUserProfileCommand { get; }
+        public IAsyncRelayCommand LogOutCommand { get; }
+
+        private async Task LoadUserProfile()
         {
             try
             {
                 var userId = await _userService.GetCurrentUserId();
-                User = await _userService.GetUserById(userId);
+                var user = await _userService.GetUserById(userId);
+
+                UserName = user.Name;
+                ProfilePictureUrl = user.ProfilePictureUrl;
+
+                var habits = await _habitService.GetHabitsByUserId(userId);
+
+                ActiveHabits.Clear();
+                foreach (var habit in habits)
+                {
+                    habit.Streak = await _habitService.CalculateStreak(habit.HabitId);
+                    ActiveHabits.Add(habit);
+                }
+
+                // Assuming we want the current streak of the longest streak habit
+                CurrentStreak = ActiveHabits.Any() ? ActiveHabits.Max(h => h.Streak) : 0;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to load user data: {ex.Message}");
+                Debug.WriteLine($"Failed to load user profile: {ex.Message}");
             }
         }
 
-        [RelayCommand]
-        public async Task LogOutAsync()
+        private async Task LogOut()
         {
             try
             {
                 await _userService.LogOut();
-                // Navigate to the login page or handle post-logout actions
-
             }
             catch (Exception ex)
             {
