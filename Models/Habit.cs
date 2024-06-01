@@ -14,7 +14,7 @@ namespace HabitTracker.Models
         public Guid HabitId { get; set; }
 
         [Column("name")]
-        public string Name { get; set; }
+        public string Names { get; set; }
 
         [Column("description")]
         public string Description { get; set; }
