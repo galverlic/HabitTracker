@@ -13,7 +13,7 @@ namespace HabitTracker
             RegisterForRoute<HabitsListingPage>();
             RegisterForRoute<RegistrationPage>();
             RegisterForRoute<UserProfilePage>();
-
+            RegisterForRoute<CustomPopupPage>();
 
         }
 
