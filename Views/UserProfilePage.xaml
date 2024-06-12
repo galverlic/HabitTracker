@@ -45,17 +45,14 @@
                     <Label Text="Weekly Stats" FontSize="Medium" FontAttributes="Bold" />
                     <HorizontalStackLayout Spacing="20" HorizontalOptions="Center">
                         <VerticalStackLayout HorizontalOptions="Center">
-                            <Label Text="86%" FontSize="Large" TextColor="#6A1B9A" HorizontalOptions="Center" />
+                            <Label Text="0%" FontSize="Large" TextColor="#6A1B9A" HorizontalOptions="Center" />
                             <Label Text="Progress" FontSize="Small" HorizontalOptions="Center" />
                         </VerticalStackLayout>
                         <VerticalStackLayout HorizontalOptions="Center">
-                            <Label Text="92%" FontSize="Large" TextColor="#6A1B9A" HorizontalOptions="Center" />
+                            <Label Text="0%" FontSize="Large" TextColor="#6A1B9A" HorizontalOptions="Center" />
                             <Label Text="Consistency" FontSize="Small" HorizontalOptions="Center" />
                         </VerticalStackLayout>
-                        <VerticalStackLayout HorizontalOptions="Center">
-                            <Label Text="3" FontSize="Large" TextColor="#6A1B9A" HorizontalOptions="Center" />
-                            <Label Text="Level" FontSize="Small" HorizontalOptions="Center" />
-                        </VerticalStackLayout>
+                        
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Frame>

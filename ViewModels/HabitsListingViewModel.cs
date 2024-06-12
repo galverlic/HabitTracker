@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.ComponentModel;
 
 namespace HabitTracker.ViewModels
 {
@@ -72,6 +73,10 @@ namespace HabitTracker.ViewModels
             {
                 await LoadHabits();
             });
+            MessagingCenter.Subscribe<HabitService, Habit>(this, "HabitProgressUpdated", async (sender, habit) =>
+            {
+                await RefreshHabits();
+            });
         }
 
         public async Task InitializeUser()
@@ -94,15 +99,22 @@ namespace HabitTracker.ViewModels
                 UserRealName = "Error Loading User";
             }
         }
+        public async Task RefreshHabits()
+        {
+            await LoadHabits();
+        }
 
         private async Task LoadHabits()
         {
             try
             {
                 var userId = await _userService.GetCurrentUserId();
+                var formattedDate = _currentDate.Date.ToString("yyyy-MM-dd");
+                Debug.WriteLine($"Loading habits for user {userId} on date {formattedDate}");
+
                 var habits = await _habitService.GetHabitsByDateAndUserId(_currentDate, userId);
 
-                Debug.WriteLine($"Retrieved {habits.Count()} habits for user {userId} on date {_currentDate.ToShortDateString()}");
+                Debug.WriteLine($"Retrieved {habits.Count()} habits for user {userId} on date {formattedDate}");
 
                 Habits.Clear();
 
@@ -128,6 +140,14 @@ namespace HabitTracker.ViewModels
             {
                 Debug.WriteLine($"Error in LoadHabits: {ex.Message}");
             }
+        }
+
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         [RelayCommand]
@@ -172,9 +192,6 @@ namespace HabitTracker.ViewModels
             }
         }
 
-
-
-
         [RelayCommand]
         public async Task ToggleHabitCompleted(Habit habit)
         {
@@ -188,15 +205,26 @@ namespace HabitTracker.ViewModels
         [RelayCommand]
         public async Task IncrementRepetition(Habit habit)
         {
+            if (habit == null)
+            {
+                Debug.WriteLine("IncrementRepetition Error: Habit is null.");
+                return;
+            }
+
             try
             {
-                var progress = await _habitService.GetHabitProgress(habit.HabitId, CurrentDate);
+                var currentDate = DateTime.UtcNow.Date;
+                Debug.WriteLine($"IncrementRepetition called for habitId: {habit.HabitId} on date: {currentDate}");
+
+                var progress = await _habitService.GetHabitProgress(habit.HabitId, currentDate);
+
                 if (progress == null)
                 {
+                    Debug.WriteLine("No existing progress found. Creating new progress.");
                     progress = new HabitProgress
                     {
                         ProgressId = Guid.NewGuid(),
-                        Date = CurrentDate,
+                        Date = currentDate,
                         CurrentRepetition = 0,
                         IsCompleted = false,
                         HabitId = habit.HabitId
@@ -204,13 +232,15 @@ namespace HabitTracker.ViewModels
                 }
 
                 progress.CurrentRepetition++;
+                Debug.WriteLine($"Incremented CurrentRepetition: {progress.CurrentRepetition}");
+
                 progress.IsCompleted = progress.CurrentRepetition >= habit.TargetRepetition;
 
-                habit.CurrentRepetition = progress.CurrentRepetition;
-                habit.IsCompleted = progress.IsCompleted;
-
                 await _habitService.AddOrUpdateHabitProgress(progress);
-                await _habitService.UpdateHabit(habit);
+                Debug.WriteLine($"Progress saved. CurrentRepetition: {progress.CurrentRepetition}");
+
+                MessagingCenter.Send(this, "HabitProgressUpdated", habit);
+
                 await LoadHabits();
             }
             catch (Exception ex)
@@ -219,30 +249,47 @@ namespace HabitTracker.ViewModels
             }
         }
 
+
+
+
         [RelayCommand]
         public async Task DecrementRepetition(Habit habit)
         {
             try
             {
+                Debug.WriteLine($"DecrementRepetition called for habitId: {habit.HabitId}");
                 var progress = await _habitService.GetHabitProgress(habit.HabitId, CurrentDate);
                 if (progress != null)
                 {
-                    if (progress.CurrentRepetition <= 0)
-                    {
-                        progress.CurrentRepetition = 0;
-                    }
-                    else
+                    if (progress.CurrentRepetition > 0)
                     {
                         progress.CurrentRepetition--;
                     }
+                    Debug.WriteLine($"Decremented CurrentRepetition to: {progress.CurrentRepetition}");
 
+                    // Check if the habit is completed
                     progress.IsCompleted = progress.CurrentRepetition >= habit.TargetRepetition;
 
-                    habit.CurrentRepetition = progress.CurrentRepetition;
-                    habit.IsCompleted = progress.IsCompleted;
-
+                    // Save the updated progress
                     await _habitService.AddOrUpdateHabitProgress(progress);
+
+                    // Re-fetch the progress to ensure it's saved correctly
+                    var verifyProgress = await _habitService.GetHabitProgress(habit.HabitId, CurrentDate);
+                    if (verifyProgress == null)
+                    {
+                        Debug.WriteLine($"Error: No progress found after saving for habitId: {habit.HabitId}");
+                    }
+                    else
+                    {
+                        habit.CurrentRepetition = verifyProgress.CurrentRepetition;
+                        habit.IsCompleted = verifyProgress.IsCompleted;
+                        Debug.WriteLine($"Verified CurrentRepetition (after save): {verifyProgress.CurrentRepetition}");
+                    }
+
+                    // Save the updated habit
                     await _habitService.UpdateHabit(habit);
+
+                    // Reload the habits to refresh the UI
                     await LoadHabits();
                 }
             }
@@ -251,6 +298,8 @@ namespace HabitTracker.ViewModels
                 Debug.WriteLine($"DecrementRepetition Error: {ex.Message}");
             }
         }
+
+
 
 
 

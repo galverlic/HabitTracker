@@ -1,5 +1,6 @@
 ﻿using HabitTracker.Models;
 using Newtonsoft.Json;
+using Postgrest.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -182,29 +183,28 @@ namespace HabitTracker.Services
         {
             var formattedDate = date.Date.ToString("yyyy-MM-dd");
 
-            // Fetch all habits for the user that start on or before the given date
+            Debug.WriteLine($"Fetching habits for user {userId} on or before {formattedDate}");
+
             var habitResponse = await client.From<Habit>()
                                             .Select("*")
-                                            .Filter("user_id", Postgrest.Constants.Operator.Equals, userId.ToString())
-                                            .Filter("start_date", Postgrest.Constants.Operator.LessThanOrEqual, formattedDate)
+                                            .Filter("user_id", Operator.Equals, userId.ToString())
+                                            .Filter("start_date", Operator.LessThanOrEqual, formattedDate)
                                             .Get();
-            var habits = habitResponse.Models;
 
+            var habits = habitResponse.Models;
             Debug.WriteLine($"Retrieved {habits.Count} habits for user {userId} on or before {formattedDate}");
 
-            // Filter habits by frequency
             var filteredHabits = habits.Where(habit => habit.FrequencyDays.Contains(date.DayOfWeek)).ToList();
             Debug.WriteLine($"Filtered {filteredHabits.Count} habits for the current day of week: {date.DayOfWeek}");
 
-            // Fetch progress records for these habits on the specified date
             var progressResponse = await client.From<HabitProgress>()
                                                .Select("*")
-                                               .Filter("date", Postgrest.Constants.Operator.Equals, formattedDate)
+                                               .Filter("date", Operator.Equals, formattedDate)
                                                .Get();
+
             var progressRecords = progressResponse.Models;
             Debug.WriteLine($"Retrieved {progressRecords.Count} progress records for date {formattedDate}");
 
-            // Match habits with their corresponding progress
             var joinedData = filteredHabits
                 .GroupJoin(progressRecords,
                            habit => habit.HabitId,
@@ -225,42 +225,152 @@ namespace HabitTracker.Services
         }
 
 
+
         public async Task<HabitProgress> GetHabitProgress(Guid habitId, DateTime date)
         {
             var formattedDate = date.Date.ToString("yyyy-MM-dd");
             Debug.WriteLine($"Querying habit progress for habitId: {habitId} on date: {formattedDate}");
 
-            var response = await client.From<HabitProgress>()
-                                       .Select("*")
-                                       .Filter("habit_id", Operator.Equals, habitId.ToString())
-                                       .Filter("date", Operator.Equals, formattedDate)
-                                       .Single();
-            Debug.WriteLine($"Retrieved habit progress: {(response?.ProgressId.ToString() ?? "None")}");
+            try
+            {
+                var response = await client.From<HabitProgress>()
+                                           .Select("*")
+                                           .Filter("habit_id", Operator.Equals, habitId.ToString())
+                                           .Filter("date", Operator.Equals, formattedDate)
+                                           .Single();
 
+                if (response == null)
+                {
+                    Debug.WriteLine($"[ERROR] No habit progress found for habitId: {habitId} on date: {formattedDate}");
+                }
+                else
+                {
+                    Debug.WriteLine($"[SUCCESS] Retrieved habit progress: {response.ProgressId}");
+                }
 
-            return response;
+                return response;
+            }
+            catch (PostgrestException pgEx)
+            {
+                Debug.WriteLine($"[POSTGREST EXCEPTION] Error querying habit progress: {pgEx.Message}");
+                if (pgEx.Response.Content != null)
+                {
+                    Debug.WriteLine($"Response Content: {await pgEx.Response.Content.ReadAsStringAsync()}");
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[GENERAL EXCEPTION] Error querying habit progress: {ex.Message}");
+                return null;
+            }
         }
+
+
+
+
 
         public async Task AddOrUpdateHabitProgress(HabitProgress progress)
         {
-            var existingProgressResponse = await client.From<HabitProgress>()
-                .Filter("habit_id", Operator.Equals, progress.HabitId.ToString())
-                .Filter("date", Operator.Equals, progress.Date.ToString("yyyy-MM-dd"))
-                .Get();
-
-            var existingProgress = existingProgressResponse.Models.FirstOrDefault();
-
-            if (existingProgress == null)
+            try
             {
-                await client.From<HabitProgress>().Insert(progress);
+                // Ensure the date is in UTC and set correctly
+                if (progress.Date.Kind == DateTimeKind.Unspecified)
+                {
+                    progress.Date = DateTime.SpecifyKind(progress.Date, DateTimeKind.Utc);
+                }
+                else
+                {
+                    progress.Date = progress.Date.ToUniversalTime();
+                }
+
+                var dateFormatted = progress.Date.ToString("yyyy-MM-dd");
+                Debug.WriteLine($"[START] AddOrUpdateHabitProgress for date: {dateFormatted} and habitId: {progress.HabitId}");
+                Debug.WriteLine($"[DEBUG] Progress Date Kind: {progress.Date.Kind}, Date: {progress.Date}");
+
+                // Attempt to fetch existing progress
+                var existingProgressResponse = await client.From<HabitProgress>()
+                    .Filter("habit_id", Operator.Equals, progress.HabitId.ToString())
+                    .Filter("date", Operator.Equals, dateFormatted)
+                    .Get();
+
+                var existingProgress = existingProgressResponse.Models.FirstOrDefault();
+
+                if (existingProgress == null)
+                {
+                    // No existing progress, insert new record
+                    Debug.WriteLine("No existing progress found. Inserting new progress.");
+                    progress.Date = DateTime.SpecifyKind(progress.Date, DateTimeKind.Utc); // Ensure it is still UTC
+                    var insertResponse = await client.From<HabitProgress>().Insert(progress);
+                    if (!insertResponse.Models.Any())
+                    {
+                        Debug.WriteLine($"[ERROR] Failed to insert new progress for habitId: {progress.HabitId} on date: {dateFormatted}");
+                        return;
+                    }
+                    Debug.WriteLine($"[SUCCESS] Inserted new progress with ID: {insertResponse.Models.First().ProgressId}");
+                }
+                else
+                {
+                    // Existing progress found, update record
+                    Debug.WriteLine($"Existing progress found: {existingProgress.ProgressId}. Updating progress.");
+                    existingProgress.CurrentRepetition = progress.CurrentRepetition;
+                    existingProgress.IsCompleted = progress.IsCompleted;
+
+                    // Explicitly set existingProgress date to UTC before update
+                    if (existingProgress.Date.Kind == DateTimeKind.Unspecified)
+                    {
+                        existingProgress.Date = DateTime.SpecifyKind(existingProgress.Date, DateTimeKind.Utc);
+                    }
+                    else
+                    {
+                        existingProgress.Date = existingProgress.Date.ToUniversalTime();
+                    }
+
+                    var matchConditions = new Dictionary<string, string>
+            {
+                { "habit_id", progress.HabitId.ToString() },
+                { "date", dateFormatted }
+            };
+
+                    Debug.WriteLine($"[DEBUG] Before Update - Habit ID: {existingProgress.HabitId}, Date: {existingProgress.Date}, Date Kind: {existingProgress.Date.Kind}, CurrentRepetition: {existingProgress.CurrentRepetition}");
+                    Debug.WriteLine($"[DEBUG] existingProgress Date before update: {existingProgress.Date}");
+
+                    // Convert the object to JSON to inspect the data being sent
+                    string jsonData = JsonConvert.SerializeObject(existingProgress);
+                    Debug.WriteLine($"[DEBUG] JSON data being sent to update: {jsonData}");
+
+                    var updateResponse = await client.From<HabitProgress>()
+                                                      //.Match(matchConditions)
+                                                      .Update(existingProgress);
+
+                    Debug.WriteLine($"[DEBUG] updateResponse: {updateResponse}");
+
+                    if (!updateResponse.Models.Any())
+                    {
+                        Debug.WriteLine($"[ERROR] Failed to update progress for habitId: {progress.HabitId} on date: {dateFormatted}");
+                        return;
+                    }
+
+                    var updatedProgress = updateResponse.Models.First();
+                    Debug.WriteLine($"[SUCCESS] Updated progress with ID: {updatedProgress.ProgressId}");
+                    Debug.WriteLine($"[DEBUG] Updated progress Date: {updatedProgress.Date}, Date Kind: {updatedProgress.Date.Kind}, CurrentRepetition: {updatedProgress.CurrentRepetition}");
+                }
             }
-            else
+            catch (PostgrestException pgEx)
             {
-                existingProgress.CurrentRepetition = progress.CurrentRepetition;
-                existingProgress.IsCompleted = progress.IsCompleted;
-                await client.From<HabitProgress>().Update(existingProgress);
+                Debug.WriteLine($"AddOrUpdateHabitProgress Error: {pgEx.Message}");
+                if (pgEx.Response.Content != null)
+                {
+                    Debug.WriteLine($"Response Content: {await pgEx.Response.Content.ReadAsStringAsync()}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"AddOrUpdateHabitProgress Error: {ex.Message}");
             }
         }
+
+
         public async Task DeleteHabitProgress(Guid progressId)
         {
             try

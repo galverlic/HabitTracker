@@ -28,8 +28,6 @@ namespace HabitTracker
             var key = AppConfig.SUPABASE_KEY;
             builder.Services.AddSingleton(provider => new Supabase.Client(url, key));
 
-
-
             // Note the creation as a singleton.
             // Add ViewModels
             builder.Services.AddSingleton<HabitsListingViewModel>();
