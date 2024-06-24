@@ -44,7 +44,6 @@ namespace HabitTracker.Services
 
         public async Task CreateHabit(Habit habit)
         {
-            Debug.WriteLine($"Inserting Habit: {JsonConvert.SerializeObject(habit)}");
             await client.From<Habit>().Insert(habit);
         }
 
@@ -279,10 +278,10 @@ namespace HabitTracker.Services
                 {
                     progress.Date = DateTime.SpecifyKind(progress.Date, DateTimeKind.Utc);
                 }
-                else
-                {
-                    progress.Date = progress.Date.ToUniversalTime();
-                }
+                //else
+                //{
+                //    progress.Date = progress.Date.ToUniversalTime();
+                //}
 
                 var dateFormatted = progress.Date.ToString("yyyy-MM-dd");
                 Debug.WriteLine($"[START] AddOrUpdateHabitProgress for date: {dateFormatted} and habitId: {progress.HabitId}");
@@ -369,6 +368,8 @@ namespace HabitTracker.Services
                 Debug.WriteLine($"AddOrUpdateHabitProgress Error: {ex.Message}");
             }
         }
+
+
 
 
         public async Task DeleteHabitProgress(Guid progressId)

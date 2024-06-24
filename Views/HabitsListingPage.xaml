@@ -12,7 +12,7 @@
     </Shell.BackButtonBehavior>
     <AbsoluteLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
         <!-- User Profile Icon -->
-        <Image Source="user.png"
+        <Image Source="user.jpg"
                AbsoluteLayout.LayoutBounds="1,0,AutoSize,AutoSize"
                AbsoluteLayout.LayoutFlags="PositionProportional"
                HorizontalOptions="End"

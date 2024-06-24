@@ -8,9 +8,9 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.ComponentModel;
 
 namespace HabitTracker.ViewModels
 {
@@ -18,7 +18,6 @@ namespace HabitTracker.ViewModels
     {
         private readonly IHabitService _habitService;
         private readonly IUserService _userService;
-        private readonly UserProfileViewModel _userProfileViewModel;
 
         private DateTime _currentDate;
         private bool _isPopupVisible;
@@ -40,10 +39,11 @@ namespace HabitTracker.ViewModels
             {
                 _currentDate = value;
                 OnPropertyChanged();
-                CurrentDateDisplay = _currentDate.ToString("D"); // Update CurrentDateDisplay
+                CurrentDateDisplay = _currentDate.ToString("D");
                 LoadHabitsCommand.Execute(null);
             }
         }
+
         [ObservableProperty]
         private bool isPopupVisible;
 
@@ -51,6 +51,7 @@ namespace HabitTracker.ViewModels
         public ICommand AddProgressCommand { get; }
         public ICommand GoToPreviousDayCommand { get; }
         public ICommand GoToNextDayCommand { get; }
+        public ICommand ClosePopupCommand { get; }
 
         [ObservableProperty]
         private string currentDateDisplay;
@@ -61,8 +62,9 @@ namespace HabitTracker.ViewModels
             _userService = userService;
 
             // Initialize CurrentDate to today's date
-            _currentDate = DateTime.Now;
+            _currentDate = DateTime.Now.Date;
             CurrentDateDisplay = _currentDate.ToString("D");
+
             LoadHabitsCommand = new Command(async () => await LoadHabits());
             AddProgressCommand = new Command<Guid>(async (habitId) => await AddProgress(habitId));
             GoToPreviousDayCommand = new Command(() => CurrentDate = CurrentDate.AddDays(-1));
@@ -99,6 +101,7 @@ namespace HabitTracker.ViewModels
                 UserRealName = "Error Loading User";
             }
         }
+
         public async Task RefreshHabits()
         {
             await LoadHabits();
@@ -132,22 +135,14 @@ namespace HabitTracker.ViewModels
                     {
                         Debug.WriteLine($"Skipping habit: {habit.Name} for today");
                     }
-                }
 
-                Debug.WriteLine($"Loaded {Habits.Count} habits into the view model");
+                    Debug.WriteLine($"Loaded {Habits.Count} habits into the view model");
+                }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error in LoadHabits: {ex.Message}");
             }
-        }
-
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         [RelayCommand]
@@ -202,6 +197,7 @@ namespace HabitTracker.ViewModels
                 await LoadHabits();
             }
         }
+
         [RelayCommand]
         public async Task IncrementRepetition(Habit habit)
         {
@@ -213,10 +209,10 @@ namespace HabitTracker.ViewModels
 
             try
             {
-                var currentDate = DateTime.UtcNow.Date;
-                Debug.WriteLine($"IncrementRepetition called for habitId: {habit.HabitId} on date: {currentDate}");
+                var targetDate = CurrentDate.Date;
+                Debug.WriteLine($"IncrementRepetition called for habitId: {habit.HabitId} on date: {targetDate}");
 
-                var progress = await _habitService.GetHabitProgress(habit.HabitId, currentDate);
+                var progress = await _habitService.GetHabitProgress(habit.HabitId, targetDate);
 
                 if (progress == null)
                 {
@@ -224,7 +220,7 @@ namespace HabitTracker.ViewModels
                     progress = new HabitProgress
                     {
                         ProgressId = Guid.NewGuid(),
-                        Date = currentDate,
+                        Date = targetDate,
                         CurrentRepetition = 0,
                         IsCompleted = false,
                         HabitId = habit.HabitId
@@ -238,7 +234,7 @@ namespace HabitTracker.ViewModels
                 if (progress.CurrentRepetition >= habit.TargetRepetition)
                 {
                     progress.IsCompleted = true;
-                    habit.Streak++; // Increment streak when target repetition is met
+                    habit.Streak++;
                     Debug.WriteLine($"Streak incremented to: {habit.Streak}");
                     habitCompleted = true;
 
@@ -267,20 +263,12 @@ namespace HabitTracker.ViewModels
                 MessagingCenter.Send(this, "HabitProgressUpdated", habit);
 
                 await LoadHabits();
-
-                // Optionally show popup if you still want a popup (optional)
-                // if (habitCompleted)
-                // {
-                //     await Shell.Current.GoToAsync(nameof(CustomPopupPage));
-                // }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"IncrementRepetition Error: {ex.Message}");
             }
         }
-
-
 
         [RelayCommand]
         public async Task DecrementRepetition(Habit habit)
@@ -293,10 +281,10 @@ namespace HabitTracker.ViewModels
 
             try
             {
-                var currentDate = DateTime.UtcNow.Date; // Ensure current date is in UTC
-                Debug.WriteLine($"DecrementRepetition called for habitId: {habit.HabitId} on date: {currentDate}");
+                var targetDate = CurrentDate.Date;
+                Debug.WriteLine($"DecrementRepetition called for habitId: {habit.HabitId} on date: {targetDate}");
 
-                var progress = await _habitService.GetHabitProgress(habit.HabitId, currentDate);
+                var progress = await _habitService.GetHabitProgress(habit.HabitId, targetDate);
                 if (progress != null)
                 {
                     if (progress.CurrentRepetition > 0)
@@ -304,26 +292,27 @@ namespace HabitTracker.ViewModels
                         progress.CurrentRepetition--;
                         Debug.WriteLine($"Decremented CurrentRepetition to: {progress.CurrentRepetition}");
 
-                        // Check if the habit is completed
                         progress.IsCompleted = progress.CurrentRepetition >= habit.TargetRepetition;
 
-                        // Save the updated progress
                         await _habitService.AddOrUpdateHabitProgress(progress);
 
-                        // Update the habit's current repetition and completion status
                         habit.CurrentRepetition = progress.CurrentRepetition;
                         habit.IsCompleted = progress.IsCompleted;
 
-                        // Save the updated habit
+                        if (!progress.IsCompleted && habit.Streak > 0)
+                        {
+                            habit.Streak--;
+                            Debug.WriteLine($"Streak decremented to: {habit.Streak}");
+                        }
+
                         await _habitService.UpdateHabit(habit);
 
-                        // Reload the habits to refresh the UI
                         await LoadHabits();
                     }
                 }
                 else
                 {
-                    Debug.WriteLine($"Error: No progress found for habitId: {habit.HabitId} on date: {currentDate}");
+                    Debug.WriteLine($"Error: No progress found for habitId: {habit.HabitId} on date: {targetDate}");
                 }
             }
             catch (Exception ex)
@@ -332,14 +321,10 @@ namespace HabitTracker.ViewModels
             }
         }
 
-
-
         public void ShowPopup()
         {
             IsPopupVisible = true;
         }
-
-        public ICommand ClosePopupCommand { get; }
 
         [RelayCommand]
         public async Task GetHabits()

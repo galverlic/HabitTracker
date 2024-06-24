@@ -45,19 +45,37 @@ namespace HabitTracker.ViewModels
                 var user = await _userService.GetUserById(userId);
 
                 UserName = user.Name;
-                ProfilePictureUrl = user.ProfilePictureUrl;
+                ProfilePictureUrl = user.ProfilePictureUrl ?? "user.jpg"; // Use dynamic URL if available
 
                 var habits = await _habitService.GetHabitsByUserId(userId);
+                Debug.WriteLine($"Fetched {habits.Count()} habits for user {userId}");
 
-                ActiveHabits.Clear();
+                var activeHabits = new List<Habit>();
+
                 foreach (var habit in habits)
                 {
                     habit.Streak = await _habitService.CalculateStreak(habit.HabitId);
+                    Debug.WriteLine($"Habit ID: {habit.HabitId}, Name: {habit.Name}, Streak: {habit.Streak}");
+
+                    if (habit.Streak > 0)
+                    {
+                        activeHabits.Add(habit);
+                    }
+                }
+
+                Debug.WriteLine($"Number of active habits: {activeHabits.Count}");
+
+                // Clear and update ActiveHabits collection
+                ActiveHabits.Clear();
+                foreach (var habit in activeHabits)
+                {
                     ActiveHabits.Add(habit);
                 }
 
                 // Assuming we want the current streak of the longest streak habit
                 CurrentStreak = ActiveHabits.Any() ? ActiveHabits.Max(h => h.Streak) : 0;
+
+                Debug.WriteLine($"Current streak: {CurrentStreak}");
             }
             catch (Exception ex)
             {

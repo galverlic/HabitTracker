@@ -95,3 +95,5 @@ namespace HabitTracker.Models
         public List<HabitProgress> Progress { get; set; } = new List<HabitProgress>();
     }
 }
+
+
