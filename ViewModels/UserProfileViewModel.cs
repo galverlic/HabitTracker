@@ -34,6 +34,12 @@ namespace HabitTracker.ViewModels
         [ObservableProperty]
         private int currentStreak;
 
+        [ObservableProperty]
+        private string name;
+
+        [ObservableProperty]
+        private int streak;
+
         public IAsyncRelayCommand LoadUserProfileCommand { get; }
         public IAsyncRelayCommand LogOutCommand { get; }
 

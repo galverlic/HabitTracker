@@ -126,7 +126,8 @@ namespace HabitTracker.ViewModels
                     var currentDayFrequency = Habit.ConvertDayToHabitFrequency(_currentDate.DayOfWeek);
                     Debug.WriteLine($"Habit: {habit.Name}, Frequency: {habit.Frequency}, CurrentDayFrequency: {currentDayFrequency}");
 
-                    if (habit.Frequency.HasFlag(currentDayFrequency))
+                    // Ensure we only compare dates, ignoring the time component
+                    if (habit.StartDate.Date <= _currentDate.Date && habit.Frequency.HasFlag(currentDayFrequency))
                     {
                         Debug.WriteLine($"Adding habit: {habit.Name} for today");
                         Habits.Add(habit);
@@ -144,6 +145,8 @@ namespace HabitTracker.ViewModels
                 Debug.WriteLine($"Error in LoadHabits: {ex.Message}");
             }
         }
+
+
 
         [RelayCommand]
         private async Task OpenUserProfile()
@@ -197,6 +200,21 @@ namespace HabitTracker.ViewModels
                 await LoadHabits();
             }
         }
+        private async Task CheckAndResetStreak(Habit habit)
+        {
+            var lastProgress = await _habitService.GetLastHabitProgress(habit.HabitId);
+            if (lastProgress != null)
+            {
+                var timeSinceLastProgress = CurrentDate - lastProgress.Date;
+                if (timeSinceLastProgress.TotalDays > 1)  // Check if more than one day has passed
+                {
+                    habit.Streak = 0;
+                    await _habitService.UpdateHabit(habit);
+                    Debug.WriteLine($"Streak reset for habit {habit.Name}.");
+                }
+            }
+        }
+
 
         [RelayCommand]
         public async Task IncrementRepetition(Habit habit)
@@ -212,10 +230,12 @@ namespace HabitTracker.ViewModels
                 var targetDate = CurrentDate.Date;
                 Debug.WriteLine($"IncrementRepetition called for habitId: {habit.HabitId} on date: {targetDate}");
 
+                // Fetch existing progress for the current date
                 var progress = await _habitService.GetHabitProgress(habit.HabitId, targetDate);
 
                 if (progress == null)
                 {
+                    // No progress for today, create a new entry
                     Debug.WriteLine("No existing progress found. Creating new progress.");
                     progress = new HabitProgress
                     {
@@ -227,29 +247,25 @@ namespace HabitTracker.ViewModels
                     };
                 }
 
+                // Ensure that progress cannot exceed the target repetitions for the day
+                if (progress.IsCompleted)
+                {
+                    Debug.WriteLine("Habit is already completed for today. No further increment.");
+                    return;
+                }
+
                 progress.CurrentRepetition++;
                 Debug.WriteLine($"Incremented CurrentRepetition: {progress.CurrentRepetition}");
 
-                bool habitCompleted = false;
                 if (progress.CurrentRepetition >= habit.TargetRepetition)
                 {
                     progress.IsCompleted = true;
                     habit.Streak++;
                     Debug.WriteLine($"Streak incremented to: {habit.Streak}");
-                    habitCompleted = true;
 
-                    // Show toast notification
-                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                    string text = $"Congrats! You finished {habit.Name}. \nStreak: {habit.Streak} days";
-                    ToastDuration duration = ToastDuration.Long;
-                    double fontSize = 14;
-
-                    var toast = Toast.Make(text, duration, fontSize);
-                    await toast.Show(cancellationTokenSource.Token);
-                }
-                else
-                {
-                    progress.IsCompleted = false;
+                    // Show toast notification for habit completion
+                    var toast = Toast.Make($"Congrats! You finished {habit.Name}. \nStreak: {habit.Streak} days", ToastDuration.Long, 14);
+                    await toast.Show();
                 }
 
                 await _habitService.AddOrUpdateHabitProgress(progress);
@@ -270,6 +286,8 @@ namespace HabitTracker.ViewModels
             }
         }
 
+
+
         [RelayCommand]
         public async Task DecrementRepetition(Habit habit)
         {
@@ -285,34 +303,29 @@ namespace HabitTracker.ViewModels
                 Debug.WriteLine($"DecrementRepetition called for habitId: {habit.HabitId} on date: {targetDate}");
 
                 var progress = await _habitService.GetHabitProgress(habit.HabitId, targetDate);
-                if (progress != null)
+                if (progress != null && progress.CurrentRepetition > 0)
                 {
-                    if (progress.CurrentRepetition > 0)
+                    progress.CurrentRepetition--;
+                    Debug.WriteLine($"Decremented CurrentRepetition to: {progress.CurrentRepetition}");
+
+                    // If the habit is no longer completed, adjust the streak
+                    if (progress.IsCompleted && progress.CurrentRepetition < habit.TargetRepetition)
                     {
-                        progress.CurrentRepetition--;
-                        Debug.WriteLine($"Decremented CurrentRepetition to: {progress.CurrentRepetition}");
-
-                        progress.IsCompleted = progress.CurrentRepetition >= habit.TargetRepetition;
-
-                        await _habitService.AddOrUpdateHabitProgress(progress);
-
-                        habit.CurrentRepetition = progress.CurrentRepetition;
-                        habit.IsCompleted = progress.IsCompleted;
-
-                        if (!progress.IsCompleted && habit.Streak > 0)
-                        {
-                            habit.Streak--;
-                            Debug.WriteLine($"Streak decremented to: {habit.Streak}");
-                        }
-
-                        await _habitService.UpdateHabit(habit);
-
-                        await LoadHabits();
+                        progress.IsCompleted = false;
+                        habit.Streak--;
+                        Debug.WriteLine($"Streak decremented to: {habit.Streak}");
                     }
+
+                    await _habitService.AddOrUpdateHabitProgress(progress);
+                    habit.CurrentRepetition = progress.CurrentRepetition;
+                    habit.IsCompleted = progress.IsCompleted;
+
+                    await _habitService.UpdateHabit(habit);
+                    await LoadHabits();
                 }
                 else
                 {
-                    Debug.WriteLine($"Error: No progress found for habitId: {habit.HabitId} on date: {targetDate}");
+                    Debug.WriteLine($"Error: No progress found for habitId: {habit.HabitId} on date: {targetDate} or repetition already at 0");
                 }
             }
             catch (Exception ex)
@@ -320,6 +333,7 @@ namespace HabitTracker.ViewModels
                 Debug.WriteLine($"DecrementRepetition Error: {ex.Message}");
             }
         }
+
 
         public void ShowPopup()
         {

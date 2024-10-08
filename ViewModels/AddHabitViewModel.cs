@@ -72,7 +72,7 @@ namespace HabitTracker.ViewModels
                 Frequency = frequency,
                 CurrentRepetition = 0,
                 TargetRepetition = HabitTargetRepetition,
-                StartDate = DateTime.Now,  // Set StartDate to current date
+                StartDate = DateTime.Now.Date,  // Set StartDate to current date
                 ReminderTime = null,
                 IsCompleted = false,
                 Streak = 0,

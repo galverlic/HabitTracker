@@ -184,6 +184,7 @@ namespace HabitTracker.ViewModels
             }
             else
             {
+                await _habitService.DeleteHabit(Habit.HabitId);
                 Debug.WriteLine("No habit progress found for the specified date.");
             }
         }

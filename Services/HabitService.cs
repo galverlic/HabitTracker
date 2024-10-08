@@ -187,7 +187,7 @@ namespace HabitTracker.Services
             var habitResponse = await client.From<Habit>()
                                             .Select("*")
                                             .Filter("user_id", Operator.Equals, userId.ToString())
-                                            .Filter("start_date", Operator.LessThanOrEqual, formattedDate)
+                                            .Filter("start_date", Operator.LessThanOrEqual, formattedDate) // Compare by date only
                                             .Get();
 
             var habits = habitResponse.Models;
@@ -196,31 +196,7 @@ namespace HabitTracker.Services
             var filteredHabits = habits.Where(habit => habit.FrequencyDays.Contains(date.DayOfWeek)).ToList();
             Debug.WriteLine($"Filtered {filteredHabits.Count} habits for the current day of week: {date.DayOfWeek}");
 
-            var progressResponse = await client.From<HabitProgress>()
-                                               .Select("*")
-                                               .Filter("date", Operator.Equals, formattedDate)
-                                               .Get();
-
-            var progressRecords = progressResponse.Models;
-            Debug.WriteLine($"Retrieved {progressRecords.Count} progress records for date {formattedDate}");
-
-            var joinedData = filteredHabits
-                .GroupJoin(progressRecords,
-                           habit => habit.HabitId,
-                           progress => progress.HabitId,
-                           (habit, progresses) => new { Habit = habit, Progresses = progresses })
-                .SelectMany(joined => joined.Progresses.DefaultIfEmpty(),
-                            (joined, progress) =>
-                            {
-                                joined.Habit.CurrentRepetition = progress?.CurrentRepetition ?? 0;
-                                joined.Habit.IsCompleted = progress?.IsCompleted ?? false;
-                                return joined.Habit;
-                            })
-                .ToList();
-
-            Debug.WriteLine($"Joined {joinedData.Count} habits with progress records");
-
-            return joinedData;
+            return filteredHabits;
         }
 
 
@@ -370,6 +346,30 @@ namespace HabitTracker.Services
         }
 
 
+        public async Task<HabitProgress> GetLastHabitProgress(Guid habitId)
+        {
+            try
+            {
+                var response = await client.From<HabitProgress>()
+                                           .Select("*")
+                                           .Filter("habit_id", Operator.Equals, habitId.ToString())
+                                           .Order("date", Ordering.Descending)
+                                           .Limit(1)  // Omejimo poizvedbo na en rezultat, da dobimo zadnji vnos
+                                           .Single();
+
+                return response;
+            }
+            catch (PostgrestException pgEx)
+            {
+                Debug.WriteLine($"[POSTGREST EXCEPTION] Error fetching last habit progress: {pgEx.Message}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[GENERAL EXCEPTION] Error fetching last habit progress: {ex.Message}");
+                return null;
+            }
+        }
 
 
         public async Task DeleteHabitProgress(Guid progressId)

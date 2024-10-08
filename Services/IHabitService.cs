@@ -21,5 +21,6 @@ namespace HabitTracker.Services
         Task<IEnumerable<Habit>> GetHabitsByDateAndUserId(DateTime date, Guid userId);
         Task DeleteHabitProgress(Guid habitProgressId); 
         Task<int> CalculateStreak(Guid habitId);
+        Task<HabitProgress> GetLastHabitProgress(Guid habitId);
     }
 }
